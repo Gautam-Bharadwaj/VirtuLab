@@ -40,3 +40,12 @@ def detect_misconception(state: AgentState) -> dict:
         elif ph > 7.5 and base_volume < 20 and failure is None:
             misconception = "added_too_fast"
 
+    elif sim_type == "enzyme":
+        temperature = sim.get("temperature", 37)
+        if failure == "DENATURED":
+            misconception = "denaturation_triggered"
+        elif temperature > 55 and failure is None:
+            misconception = "approaching_denaturation"
+
+    return {"misconception": misconception}
+
