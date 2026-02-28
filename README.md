@@ -75,6 +75,174 @@ The architecture is strictly decoupled. The **Frontend (Next.js/React)** handles
 ## 5. Database Design
 
 ### ER Diagram
+*(Add ER diagram image here showing Students, Experiment_Logs, and Misconception_Tags tables)*
 
-```mermaid
-erDiagram
+### ER Diagram Description
+- **`students`**: Stores anonymous tracking IDs and language preferences.
+- **`experiment_logs`**: The core telemetry table. Stores `student_id`, `experiment_type`, `inputs_used`, `failure_triggered`, and `timestamp`.
+- **`misconception_tags`**: A reference table that categorizes raw errors into pedagogical concepts (e.g., "Polarity Confusion", "Denaturation Error").
+
+---
+
+## 6. Dataset Selected
+
+### Dataset Name
+Procedural Science Laws & Socratic Decision Tree.
+
+### Source
+Derived from first-principles science: Ohm's Law, Faraday's Law, Logarithmic pH curves, and Michaelis-Menten equations.
+
+### Data Type
+Real-time computational state data (JSON).
+
+### Selection Reason
+Simulators require absolute scientific accuracy. By utilizing hardcoded mathematical formulas rather than training a model on historical data, we guarantee zero hallucination in the scientific engines. 
+
+### Preprocessing Steps
+Simulation tick data is normalized into a standard JSON schema (`{ current_state, target_state, error_code }`) before being evaluated by the Local Logic or sent to the LLM to ensure precise context.
+
+---
+
+## 7. Model Selected
+
+### Model Name
+Google Gemini 1.5 Pro (Online) + Local Rule-Based Decision Logic (Offline).
+
+### Selection Reasoning
+Gemini 1.5 Pro provides exceptional reasoning capabilities and a massive context window to analyze complex JSON simulation states. It natively supports high-quality text output in Indian vernacular languages. To satisfy the offline requirement, we use a Local Decision Engine as a fallback to ensure the "Mentor" never disappears.
+
+### Alternatives Considered
+- *GPT-4o:* Excellent reasoning, but higher latency/cost barrier for hackathon constraints.
+- *Llama 3 (Local):* Would solve offline AI constraints perfectly, but requires heavy GPU processing impossible on budget smartphones.
+
+### Evaluation Metrics
+- **Socratic Compliance:** Does the model ask a question instead of giving the direct answer?
+- **Context Grounding:** Does the model reference the specific numbers from the simulation?
+
+---
+
+## 8. Technology Stack
+
+### Frontend
+- Next.js (React) / Vite
+- Tailwind CSS & Framer Motion (Styling & Animation)
+- HTML5 Canvas & Zustand (Physics Rendering & State)
+- vite-plugin-pwa (Offline Caching)
+- Recharts (Data Visualization)
+
+### Backend
+- FastAPI (Python) / Node.js
+- WebSockets / REST API
+
+### ML/AI
+- Google Gemini 1.5 Pro API
+- LangGraph (Agentic Orchestration)
+
+### Database
+- Supabase (PostgreSQL + Real-time Subscriptions)
+
+### Deployment
+- Vercel (Frontend)
+- Railway / Render (Backend)
+
+---
+
+## 9. API Documentation & Testing
+
+### API Endpoints List
+- **POST `/api/tutor/analyze`**: Accepts current simulation JSON state, returns an advanced Socratic hint via Gemini.
+- **POST `/api/logs/record`**: Pushes student failure events to the database (syncs automatically when online).
+- **GET `/api/teacher/heatmap`**: Fetches aggregated misconception data for the Recharts dashboard.
+
+### API Testing Screenshots
+*(Add Postman / Thunder Client screenshots here showing a JSON payload sent and a Socratic response received)*
+
+---
+
+## 10. Module-wise Development & Deliverables
+
+### Checkpoint 1: Research & Planning
+- **Deliverables:** Finalized mathematical formulas for the 4 core simulators, defined JSON state schemas, mapped the `hints.json` offline decision tree, and created GitHub repository.
+
+### Checkpoint 2: Backend Development
+- **Deliverables:** API server scaffolded, Gemini API integrated with LangGraph, and Supabase project initialized with tables.
+
+### Checkpoint 3: Frontend Development
+- **Deliverables:** Next.js UI shell created, Zustand state store configured, and initial HTML5 Canvas drawing logic implemented for the simulators.
+
+### Checkpoint 4: Model Training & Prompting
+- **Deliverables:** Tuned the Gemini System Prompt to enforce strict Socratic questioning. Validated the Local Offline Engine logic.
+
+### Checkpoint 5: Model Integration
+- **Deliverables:** Connected Frontend State to Backend API. Built the Teacher Misconception Dashboard and Student Skill Radar charts.
+
+### Checkpoint 6: Deployment
+- **Deliverables:** PWA manifest configured and Service Workers active. Frontend deployed to Vercel. End-to-end testing completed in Airplane Mode.
+
+---
+
+## 11. End-to-End Workflow
+
+1. Student opens the PWA URL on their smartphone; all math engines and the `hints.json` file cache for offline use.
+2. Student selects an experiment (e.g., Enzyme Kinetics) and adjusts variables (Temperature/pH).
+3. The local math engine calculates the result. If parameters exceed limits (e.g., Temp = 90°C), a visual "Failure State" triggers (Enzyme denatures).
+4. **Offline Path:** The Local Engine reads the failure and instantly displays a cached Socratic text hint.
+5. **Online Path:** If Wi-Fi is active, the React frontend packages the variables into JSON and sends it to the FastAPI backend. Gemini 1.5 Pro analyzes the data and generates a highly specific, context-aware Socratic question.
+6. The frontend displays the hint in the student's chosen language.
+7. Concurrently, the failure event is synced to Supabase, instantly updating the Teacher's "Misconception Heatmap" dashboard.
+
+---
+
+## 12. Demo & Video
+
+- **Live Demo Link:** *(Insert Vercel Link)*
+- **Demo Video Link:** *(Insert YouTube/Drive Link)*
+- **GitHub Repository:** *(Insert GitHub Link)*
+
+---
+
+## 13. Hackathon Deliverables Summary
+
+- A fully functional, offline-capable Progressive Web App (PWA).
+- Four interactive, math-driven lab simulations spanning Physics, Chemistry, Biology, and Agronomy.
+- A Hybrid AI Tutor providing Socratic textual feedback (Local Rules + Cloud AI).
+- A Real-time Teacher Telemetry Dashboard mapping class-wide misconceptions.
+- A Student Diagnostic Dashboard featuring a Skill Radar and Error Timeline.
+
+---
+
+## 14. Team Roles & Responsibilities
+
+| Member Name | Role & Difficulty Level | Responsibilities |
+|-------------|-------------------------|-----------------|
+| **Ayush** | **Simulation & Agent Architect (High Difficulty)** | Writing the core mathematical science engines (Physics/Chem/Bio) in JS. Managing Zustand state, defining Failure States, and architecting the LangGraph Socratic logic and Gemini prompts. |
+| **Member 2** | **Infrastructure & API Lead (Medium-High Difficulty)** | Setting up FastAPI/Node backend, managing Supabase schema and REST endpoints. Configuring `vite-plugin-pwa` Service Workers to ensure the offline fallback logic works flawlessly. |
+| **Member 3** | **Frontend & Analytics Lead (Medium Difficulty)** | Building the responsive Next.js UI shell. Integrating Recharts to build the Teacher Misconception Dashboard and the Student Skill Radar. Connecting frontend charts to live Supabase data streams. |
+
+---
+
+## 15. Future Scope & Scalability
+
+### Short-Term
+- **Vision-to-Sim (AR-Lite):** Using Gemini Vision to allow students to take a photo of a textbook circuit diagram and instantly generate a digital, interactive simulation of that exact circuit.
+- Expand the library to cover B.Tech core mechanical engineering concepts (e.g., Fluid Dynamics, Thermodynamics).
+
+### Long-Term
+- Fine-tune a smaller, open-source SLM (Small Language Model like Llama-3-8B) to run locally via WebGPU, enabling dynamic AI generation completely offline.
+- Institutional deployment: Partnering with State Education Boards to map simulations directly to NCERT and AICTE syllabi.
+
+---
+
+## 16. Known Limitations
+
+- **Offline AI Limitation:** While the simulations run 100% offline, the Socratic hints provided in offline mode are pulled from a static decision tree. Dynamic, conversational generation requires an internet connection to reach the Gemini API.
+- **Physics Approximation:** Simulations use ideal mathematical models and currently do not account for complex real-world variables like ambient humidity or wire impurities.
+- **Sync Latency:** The Teacher Dashboard only updates when the student's device re-establishes an active internet connection to flush the local logs.
+
+---
+
+## 17. Impact
+
+- **Democratizing Education:** Provides high-end practical learning and scientific intuition to rural students at zero marginal cost.
+- **Empowering Educators:** Shifts teaching from "blind instruction" to data-driven pedagogy via the Misconception Heatmap.
+- **NEP 2020 Alignment:** Directly fulfills the government's mandate for immersive, experiential, and equitable digital education infrastructure.
