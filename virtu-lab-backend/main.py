@@ -32,3 +32,17 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
+
+class AnalyzeRequest(BaseModel):
+    sim_state: dict
+    student_id: str
+
+
+class VisionRequest(BaseModel):
+    image_base64: str
+
+
+@app.get("/health")
+def health():
+    return {"status": "ok", "message": "VirtuLab Backend Running"}
+
