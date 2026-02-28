@@ -10,3 +10,13 @@
         "Something caused the current to exceed the safe limit. Which variable in your circuit do you think pushed it over the edge?"
     ],
     "added_too_fast": [
+        "Your pH has already jumped above 7.5 and you've only added a small volume of base — what might happen if you keep adding at this rate?",
+        "The pH is rising quickly even though the base volume is still under 20 mL. Near the equivalence point, why does pH change so dramatically with each drop?",
+        "Look at how fast the pH is climbing. What would happen if you slowed down and added the base one drop at a time instead?"
+    ],
+    "endpoint_missed": [
+        "The pH shot way past the equivalence point. What clue from the indicator colour change should have told you to stop adding base?",
+        "You overshot the endpoint — thinking back, at what pH value were you supposed to stop, and what could you have done differently near that point?",
+        "The titration failed because too much base was added. How could watching the rate of pH change per drop have helped you spot the endpoint?"
+    ],
+    "approaching_denaturation": [
