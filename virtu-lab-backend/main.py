@@ -102,3 +102,12 @@ async def vision_to_sim(req: VisionRequest):
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
 
+
+@app.post("/api/logs/record")
+async def record_log(log: dict):
+    try:
+        result = supabase.table("experiment_logs").insert(log).execute()
+        return {"id": result.data[0]["id"]}
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
+
