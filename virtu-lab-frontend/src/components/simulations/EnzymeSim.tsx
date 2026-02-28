@@ -46,3 +46,65 @@ const Substrates: React.FC<{ speed: number; frozen: boolean }> = ({ speed, froze
   );
 };
 
+// ─── Product Emission ────────────────────────────────────────────────
+
+const NUM_PRODUCTS = 10;
+
+const Products: React.FC<{ rate: number }> = ({ rate }) => {
+  const meshRef = useRef<THREE.InstancedMesh>(null);
+  const dummy = useMemo(() => new THREE.Object3D(), []);
+
+  const particles = useMemo(
+    () =>
+      Array.from({ length: NUM_PRODUCTS }, () => ({
+        pos: new THREE.Vector3(0, 0, 0),
+        vel: new THREE.Vector3(),
+        life: 0,
+        active: false,
+      })),
+    []
+  );
+
+  useFrame((_, delta) => {
+    if (!meshRef.current) return;
+
+    // Spawn based on rate
+    if (rate > 0 && Math.random() < rate * delta * 0.5) {
+      const idle = particles.find((p) => !p.active);
+      if (idle) {
+        idle.active = true;
+        idle.life = 0;
+        idle.pos.set(0, 0, 0);
+        idle.vel.set(
+          (Math.random() - 0.5) * 3,
+          (Math.random() - 0.5) * 3,
+          (Math.random() - 0.5) * 3
+        );
+      }
+    }
+
+    for (let i = 0; i < NUM_PRODUCTS; i++) {
+      const p = particles[i];
+      if (p.active) {
+        p.life += delta;
+        p.pos.addScaledVector(p.vel, delta);
+        const fade = Math.max(0, 1 - p.life * 0.4);
+        dummy.position.copy(p.pos);
+        dummy.scale.setScalar(fade * 0.6);
+
+        if (p.life > 2.5 || p.pos.length() > 5) {
+          p.active = false;
+        }
+      } else {
+        dummy.scale.setScalar(0);
+      }
+      dummy.updateMatrix();
+      meshRef.current.setMatrixAt(i, dummy.matrix);
+    }
+    meshRef.current.instanceMatrix.needsUpdate = true;
+  });
+
+  return (
+    <instancedMesh ref={meshRef} args={[undefined, undefined, NUM_PRODUCTS]}>
+      <octahedronGeometry args={[0.15]} />
+      <meshStandardMaterial color="#facc15" emissive="#facc15" emissiveIntensity={0.8} />
