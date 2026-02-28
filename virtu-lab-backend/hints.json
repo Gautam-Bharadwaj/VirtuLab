@@ -20,3 +20,13 @@
         "The titration failed because too much base was added. How could watching the rate of pH change per drop have helped you spot the endpoint?"
     ],
     "approaching_denaturation": [
+        "Your reaction temperature is above 55°C now. What do you know about what happens to an enzyme's shape at high temperatures?",
+        "The temperature keeps rising — can you recall what 'denaturation' means and at roughly what temperature most enzymes start to lose their function?",
+        "Look at the temperature reading. How do you think the enzyme's active site is being affected as the thermal energy increases this much?"
+    ],
+    "denaturation_triggered": [
+        "The enzyme has denatured and the reaction stopped. What happened to the protein's three-dimensional structure at that temperature?",
+        "Your enzyme is no longer working. Can you explain why heating a protein beyond its optimal range causes it to permanently lose its catalytic ability?",
+        "The reaction flatlined after the temperature spike. If the enzyme's active site has changed shape, why can't the substrate bind anymore?"
+    ]
+}
