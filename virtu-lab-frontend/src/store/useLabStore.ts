@@ -79,6 +79,7 @@ const welcomeMessages: ChatMessage[] = [
 /* ─── Store interface ─── */
 interface LabState {
   // Active lab
+  /** Currently selected laboratory simulation */
   activeLab: LabType;
   setActiveLab: (lab: LabType) => void;
 
