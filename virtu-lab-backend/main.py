@@ -46,3 +46,11 @@ class VisionRequest(BaseModel):
 def health():
     return {"status": "ok", "message": "VirtuLab Backend Running"}
 
+
+@app.post("/api/tutor/analyze")
+async def analyze(req: AnalyzeRequest):
+    try:
+        result = await asyncio.to_thread(
+            socratic_agent.invoke,
+            {
+                "sim_state": req.sim_state,
