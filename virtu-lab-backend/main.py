@@ -111,3 +111,16 @@ async def record_log(log: dict):
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
 
+
+@app.get("/api/teacher/heatmap")
+async def heatmap():
+    try:
+        result = (
+            supabase.table("experiment_logs")
+            .select("*")
+            .order("created_at", desc=True)
+            .execute()
+        )
+        return result.data
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
