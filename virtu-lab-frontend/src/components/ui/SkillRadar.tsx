@@ -1,5 +1,3 @@
-import React from 'react';
-
 interface Props {
   score: number;
   mistakeCount: number;
@@ -8,7 +6,7 @@ interface Props {
   onClose: () => void;
 }
 
-export const SkillRadar: React.FC<Props> = ({ onClose }) => {
+export const SkillRadar: React.FC<Props> = ({ score: _score, mistakeCount: _mc, duration: _d, failureTriggered: _ft, onClose: _onClose }) => {
   return (
     <div>
       {/* SkillRadar stub */}
