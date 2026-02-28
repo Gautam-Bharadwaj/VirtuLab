@@ -83,3 +83,21 @@ def generate_socratic_question(state: AgentState) -> dict:
 
         result = llm.invoke(messages)
         return {"response": result.content}
+    except Exception:
+        return {"response": ""}
+
+
+def route_intervention(state: AgentState) -> str:
+    return "generate" if state.get("should_intervene") else END
+
+
+workflow = StateGraph(AgentState)
+
+workflow.add_node("detect", detect_misconception)
+workflow.add_node("decide", decide_intervention)
+workflow.add_node("generate", generate_socratic_question)
+
+workflow.set_entry_point("detect")
+workflow.add_edge("detect", "decide")
+workflow.add_conditional_edges("decide", route_intervention, {"generate": "generate", END: END})
+workflow.add_edge("generate", END)
