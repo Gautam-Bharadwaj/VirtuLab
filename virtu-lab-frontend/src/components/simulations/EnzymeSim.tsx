@@ -1,9 +1,9 @@
-import React, { useRef, useMemo } from 'react';
+import React from 'react';
 
 export const EnzymeSim: React.FC = () => {
   return (
-    <group>
-      {/* EnzymeSim stub */}
-    </group>
+    <>
+      {/* EnzymeSim stub — will be replaced with R3F scene */}
+    </>
   );
 };

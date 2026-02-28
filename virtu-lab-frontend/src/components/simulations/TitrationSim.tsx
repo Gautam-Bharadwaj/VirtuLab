@@ -1,9 +1,9 @@
-import React, { useRef, useMemo } from 'react';
+import React from 'react';
 
 export const TitrationSim: React.FC = () => {
   return (
-    <group>
-      {/* TitrationSim stub */}
-    </group>
+    <>
+      {/* TitrationSim stub — will be replaced with R3F scene */}
+    </>
   );
 };

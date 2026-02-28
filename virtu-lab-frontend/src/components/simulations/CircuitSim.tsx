@@ -1,9 +1,9 @@
-import React, { useRef, useMemo } from 'react';
+import React from 'react';
 
 export const CircuitSim: React.FC = () => {
   return (
-    <group>
-      {/* CircuitSim stub */}
-    </group>
+    <>
+      {/* CircuitSim stub — will be replaced with R3F scene */}
+    </>
   );
 };
