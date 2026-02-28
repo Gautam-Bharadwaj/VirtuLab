@@ -103,3 +103,25 @@ const defaultCircuitInputs: CircuitInputs = { voltage: 6, resistance: 10 };
 const defaultTitrationInputs: TitrationInputs = { baseVolume: 0 };
 const defaultEnzymeInputs: EnzymeInputs = { temperature: 37, substrateConc: 5 };
 
+// ─── Store ───────────────────────────────────────────────────────────
+
+export const useLabStore = create<LabState>((set) => ({
+  activeLab: "circuit",
+  isRunning: false,
+  failureState: null,
+  mistakeCount: 0,
+  sessionStartTime: null,
+
+  circuit: {
+    inputs: { ...defaultCircuitInputs },
+    outputs: computeCircuit(defaultCircuitInputs).outputs,
+  },
+  titration: {
+    inputs: { ...defaultTitrationInputs },
+    outputs: computeTitration(defaultTitrationInputs).outputs,
+  },
+  enzyme: {
+    inputs: { ...defaultEnzymeInputs },
+    outputs: computeEnzyme(defaultEnzymeInputs).outputs,
+  },
+
