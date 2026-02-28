@@ -26,3 +26,9 @@ def detect_misconception(state: AgentState) -> dict:
     misconception: str | None = None
 
     if sim_type == "circuit":
+        current = sim.get("current", 0)
+        if failure == "OVERLOAD":
+            misconception = "overload_triggered"
+        elif current > 0.04 and failure is None:
+            misconception = "approaching_overload"
+
