@@ -48,3 +48,68 @@ function getPointOnPath(points: THREE.Vector3[], t: number): THREE.Vector3 {
 
 const WirePath: React.FC = () => {
   const curve = useMemo(() => {
+    return new THREE.CatmullRomCurve3(WIRE_POINTS, false, 'catmullrom', 0);
+  }, []);
+
+  const tubeGeom = useMemo(() => {
+    return new THREE.TubeGeometry(curve, 128, 0.04, 8, false);
+  }, [curve]);
+
+  return (
+    <mesh geometry={tubeGeom}>
+      <meshStandardMaterial color="#555555" metalness={0.6} roughness={0.4} />
+    </mesh>
+  );
+};
+
+// ─── Electron Dots ───────────────────────────────────────────────────
+
+const NUM_ELECTRONS = 8;
+
+const ElectronDots: React.FC<{ speed: number }> = ({ speed }) => {
+  const meshRef = useRef<THREE.InstancedMesh>(null);
+  const dummy = useMemo(() => new THREE.Object3D(), []);
+  const offsets = useMemo(
+    () => Array.from({ length: NUM_ELECTRONS }, (_, i) => i / NUM_ELECTRONS),
+    []
+  );
+  const progressRef = useRef(0);
+
+  useFrame((_, delta) => {
+    if (!meshRef.current) return;
+    progressRef.current += delta * speed;
+
+    for (let i = 0; i < NUM_ELECTRONS; i++) {
+      const t = progressRef.current + offsets[i];
+      const pos = getPointOnPath(WIRE_POINTS, t);
+      dummy.position.copy(pos);
+      dummy.updateMatrix();
+      meshRef.current.setMatrixAt(i, dummy.matrix);
+    }
+    meshRef.current.instanceMatrix.needsUpdate = true;
+  });
+
+  return (
+    <instancedMesh ref={meshRef} args={[undefined, undefined, NUM_ELECTRONS]}>
+      <sphereGeometry args={[0.08, 16, 16]} />
+      <meshStandardMaterial color="#4ade80" emissive="#4ade80" emissiveIntensity={2} />
+    </instancedMesh>
+  );
+};
+
+// ─── Battery ─────────────────────────────────────────────────────────
+
+const Battery: React.FC = () => (
+  <group position={[-3, 0, 0]}>
+    <mesh>
+      <boxGeometry args={[0.8, 1.5, 0.8]} />
+      <meshStandardMaterial color="#333333" metalness={0.8} roughness={0.3} />
+    </mesh>
+    {/* Positive terminal */}
+    <mesh position={[0, 0.8, 0]}>
+      <cylinderGeometry args={[0.15, 0.15, 0.12, 16]} />
+      <meshStandardMaterial color="#aaaaaa" metalness={0.9} roughness={0.2} />
+    </mesh>
+    <Text position={[0, 1.1, 0]} fontSize={0.35} color="#ffffff" anchorX="center" anchorY="middle">
+      +
+    </Text>
