@@ -1,1 +1,33 @@
-{}
+{
+    "overvoltage": [
+        "💡 Tip: Most real-world circuits operate under 12V. Going above 20V can damage components like LEDs and ICs.",
+        "⚡ Remember Ohm's Law: V = IR. If voltage is too high and resistance is low, current spikes dangerously!",
+        "🔌 Industrial circuits use voltage regulators to prevent overvoltage — try keeping it under 20V.",
+        "🔥 Overvoltage can cause thermal runaway in semiconductors. Think about what happens to a light bulb with too much power!"
+    ],
+    "short_circuit": [
+        "🔧 A short circuit occurs when resistance approaches zero — infinite current can flow, causing fires!",
+        "⚠️ Always ensure your circuit has sufficient resistance. Even a small resistor (10Ω) can prevent a short.",
+        "💡 Fuses and circuit breakers exist specifically to protect against short circuits.",
+        "🔬 In the real lab, a short circuit would trip the breaker instantly. Notice how current → ∞ as R → 0."
+    ],
+    "enzyme_denaturation": [
+        "🌡️ Enzymes are proteins — above ~70°C, their 3D structure unfolds (denatures) and they stop working.",
+        "🧬 Think of it like cooking an egg: once the protein changes shape, it can't go back!",
+        "📈 The optimal temperature for most human enzymes is 37°C (body temperature). Try that value!",
+        "🔬 Denaturation is irreversible — in a real lab, you'd need fresh enzyme to continue the experiment."
+    ],
+    "ph_extreme": [
+        "🧪 Extreme pH values (below 2 or above 12) can denature enzymes just like high temperatures.",
+        "⚗️ Most biological enzymes work best between pH 6–8. Pepsin is a rare exception (pH 2).",
+        "💧 pH is logarithmic — pH 3 is 10x more acidic than pH 4!",
+        "🔬 In titration, watch for the equivalence point where the pH changes most rapidly."
+    ],
+    "general": [
+        "🔍 Not sure what went wrong? Try resetting to default values and adjusting one parameter at a time.",
+        "📊 Science is about controlled experiments — change ONE variable and observe the effect.",
+        "🧪 Every experiment teaches something, even when things go wrong! What did you learn?",
+        "💡 Ask me a question in the chat if you're stuck — I'm here to help you learn!",
+        "📝 Good scientists take notes. What readings do you see in the bottom stat bar?"
+    ]
+}
