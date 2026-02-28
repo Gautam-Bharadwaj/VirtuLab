@@ -14,3 +14,11 @@ from google import genai
 from agent import socratic_agent
 
 load_dotenv()
+
+genai_client = genai.Client(api_key=os.getenv("GEMINI_API_KEY"))
+
+supabase = create_client(
+    os.getenv("SUPABASE_URL"),
+    os.getenv("SUPABASE_KEY"),
+)
+
