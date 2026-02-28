@@ -54,3 +54,16 @@ async def analyze(req: AnalyzeRequest):
             socratic_agent.invoke,
             {
                 "sim_state": req.sim_state,
+                "misconception": None,
+                "should_intervene": False,
+                "response": "",
+            },
+        )
+        return {
+            "should_intervene": result["should_intervene"],
+            "message": result.get("response") or None,
+            "misconception": result.get("misconception"),
+        }
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
+
