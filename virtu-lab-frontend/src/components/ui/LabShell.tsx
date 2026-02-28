@@ -35,14 +35,14 @@ export const LabShell: React.FC<LabShellProps> = ({ children, sidebar, tutor }) 
         {/* Sidebar Toggle (when collapsed) */}
         {!sidebarOpen && (
           <motion.button
-            initial={{ opacity: 0, x: -10 }}
-            animate={{ opacity: 1, x: 0 }}
+            key="toggle-btn"
+            initial={{ x: -20, opacity: 0 }}
+            animate={{ x: 0, opacity: 1 }}
             onClick={toggleSidebar}
-            className="absolute left-3 top-4 z-30 p-2 rounded-lg glass-panel hover:bg-white/[0.08] transition-colors"
-            title="Open Controls"
+            className="absolute left-4 top-1/2 -translate-y-1/2 w-8 h-24 bg-white/[0.03] border border-white/[0.08] rounded-full flex items-center justify-center hover:bg-white/[0.06] transition-colors group z-20"
           >
-            <svg className="w-5 h-5 text-white/50" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M9 5l7 7-7 7" />
+            <svg className="w-4 h-4 text-white/40 group-hover:text-white/80 transition-colors" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
             </svg>
           </motion.button>
         )}
