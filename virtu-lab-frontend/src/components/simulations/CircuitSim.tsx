@@ -168,3 +168,41 @@ const LEDBulb: React.FC<{
         <meshStandardMaterial
           color={isOverload ? '#ff4444' : '#ffffcc'}
           emissive={emissiveColor}
+          emissiveIntensity={emissiveIntensity}
+          transparent
+          opacity={0.9}
+        />
+      </mesh>
+      {/* Glow light */}
+      <pointLight
+        ref={lightRef}
+        color={isOverload ? '#ff0000' : '#FFD700'}
+        intensity={isOverload ? 8 : (brightness / 100) * 5}
+        distance={6}
+      />
+    </group>
+  );
+};
+
+// ─── Main Component ──────────────────────────────────────────────────
+
+const CircuitSim: React.FC = () => {
+  const current = useLabStore((s) => s.circuit.outputs.current);
+  const brightnessPercent = useLabStore((s) => s.circuit.outputs.brightnessPercent);
+  const failureState = useLabStore((s) => s.failureState);
+
+  const isOverload = failureState === 'OVERLOAD';
+  const electronSpeed = current * 200;
+
+  return (
+    <group>
+      <Battery />
+      <Resistor />
+      <LEDBulb brightness={brightnessPercent} isOverload={isOverload} />
+      <WirePath />
+      {electronSpeed > 0 && <ElectronDots speed={electronSpeed} />}
+    </group>
+  );
+};
+
+export default CircuitSim;
