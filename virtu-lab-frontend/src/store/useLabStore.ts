@@ -125,3 +125,102 @@ export const useLabStore = create<LabState>((set) => ({
     outputs: computeEnzyme(defaultEnzymeInputs).outputs,
   },
 
+  // ── Actions ──────────────────────────────────────────────────────
+
+  setActiveLab: (lab) =>
+    set({
+      activeLab: lab,
+      failureState: null,
+      isRunning: false,
+      mistakeCount: 0,
+      sessionStartTime: null,
+    }),
+
+  updateInput: (key, value) =>
+    set((state) => {
+      const lab = state.activeLab;
+
+      if (lab === "circuit") {
+        const nextInputs = { ...state.circuit.inputs, [key]: value };
+        const { outputs, failure } = computeCircuit(nextInputs);
+        const isNewFailure = failure !== null && state.failureState === null;
+        return {
+          circuit: { inputs: nextInputs, outputs },
+          failureState: state.failureState ?? failure,
+          mistakeCount: isNewFailure
+            ? state.mistakeCount + 1
+            : state.mistakeCount,
+        };
+      }
+
+      if (lab === "titration") {
+        const nextInputs = { ...state.titration.inputs, [key]: value };
+        const { outputs, failure } = computeTitration(nextInputs);
+        const isNewFailure = failure !== null && state.failureState === null;
+        return {
+          titration: { inputs: nextInputs, outputs },
+          failureState: state.failureState ?? failure,
+          mistakeCount: isNewFailure
+            ? state.mistakeCount + 1
+            : state.mistakeCount,
+        };
+      }
+
+      // enzyme
+      const nextInputs = { ...state.enzyme.inputs, [key]: value };
+      const { outputs, failure } = computeEnzyme(nextInputs);
+      const isNewFailure = failure !== null && state.failureState === null;
+      return {
+        enzyme: { inputs: nextInputs, outputs },
+        failureState: state.failureState ?? failure,
+        mistakeCount: isNewFailure
+          ? state.mistakeCount + 1
+          : state.mistakeCount,
+      };
+    }),
+
+  startExperiment: () => set({ isRunning: true, sessionStartTime: Date.now() }),
+
+  stopExperiment: () => set({ isRunning: false }),
+
+  resetExperiment: () =>
+    set((state) => {
+      const base = {
+        failureState: null,
+        mistakeCount: 0,
+        isRunning: false,
+        sessionStartTime: null,
+      };
+
+      if (state.activeLab === "circuit") {
+        return {
+          ...base,
+          circuit: {
+            inputs: { ...defaultCircuitInputs },
+            outputs: computeCircuit(defaultCircuitInputs).outputs,
+          },
+        };
+      }
+
+      if (state.activeLab === "titration") {
+        return {
+          ...base,
+          titration: {
+            inputs: { ...defaultTitrationInputs },
+            outputs: computeTitration(defaultTitrationInputs).outputs,
+          },
+        };
+      }
+
+      return {
+        ...base,
+        enzyme: {
+          inputs: { ...defaultEnzymeInputs },
+          outputs: computeEnzyme(defaultEnzymeInputs).outputs,
+        },
+      };
+    }),
+
+  recordMistake: () =>
+    set((state) => ({ mistakeCount: state.mistakeCount + 1 })),
+}));
