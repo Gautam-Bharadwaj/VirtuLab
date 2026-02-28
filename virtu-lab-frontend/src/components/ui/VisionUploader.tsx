@@ -1,10 +1,12 @@
+import React from 'react';
+
 interface Props {
   onClose: () => void;
 }
 
-export const VisionUploader: React.FC<Props> = ({ onClose: _onClose }) => {
+export const VisionUploader: React.FC<Props> = ({ onClose }) => {
   return (
-    <div>
+    <div onClick={onClose} role="dialog">
       {/* VisionUploader stub */}
     </div>
   );
