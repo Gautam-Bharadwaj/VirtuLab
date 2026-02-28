@@ -32,3 +32,11 @@ def detect_misconception(state: AgentState) -> dict:
         elif current > 0.04 and failure is None:
             misconception = "approaching_overload"
 
+    elif sim_type == "titration":
+        ph = sim.get("pH", 7.0)
+        base_volume = sim.get("baseVolume", 0)
+        if failure == "OVERSHOOT":
+            misconception = "endpoint_missed"
+        elif ph > 7.5 and base_volume < 20 and failure is None:
+            misconception = "added_too_fast"
+
