@@ -18,3 +18,11 @@ class AgentState(TypedDict):
     should_intervene: bool
     response: str
 
+
+def detect_misconception(state: AgentState) -> dict:
+    sim = state["sim_state"]
+    sim_type = sim.get("experiment", sim.get("type", "")).lower()
+    failure = sim.get("failureState")
+    misconception: str | None = None
+
+    if sim_type == "circuit":
