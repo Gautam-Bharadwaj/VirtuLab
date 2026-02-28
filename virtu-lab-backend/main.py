@@ -1,7 +1,16 @@
-from fastapi import FastAPI
+import asyncio
+import base64
+import json
+import os
+import re
 
-app = FastAPI()
+from fastapi import FastAPI, HTTPException
+from fastapi.middleware.cors import CORSMiddleware
+from pydantic import BaseModel
+from dotenv import load_dotenv
+from supabase import create_client
+from google import genai
 
-@app.get("/health")
-def health():
-    return {"status": "ok"}
+from agent import socratic_agent
+
+load_dotenv()
