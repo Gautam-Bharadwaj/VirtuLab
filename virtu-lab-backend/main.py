@@ -83,3 +83,22 @@ async def vision_to_sim(req: VisionRequest):
             '"confidence": "low"|"medium"|"high" }.'
         )
 
+        image_part = genai.types.Part.from_bytes(data=image_bytes, mime_type="image/png")
+
+        response = await asyncio.to_thread(
+            genai_client.models.generate_content,
+            model="gemini-2.0-flash",
+            contents=[prompt, image_part],
+        )
+
+        text = response.text.strip()
+        text = re.sub(r"^```(?:json)?\s*", "", text)
+        text = re.sub(r"\s*```$", "", text)
+
+        parsed = json.loads(text)
+        return parsed
+    except json.JSONDecodeError:
+        raise HTTPException(status_code=422, detail="Gemini returned non-JSON response")
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
+
