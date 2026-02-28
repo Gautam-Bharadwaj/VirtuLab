@@ -48,3 +48,57 @@ const LiquidDrops: React.FC<{ active: boolean }> = ({ active }) => {
     </instancedMesh>
   );
 };
+
+// ─── Burst Particles (OVERSHOOT) ─────────────────────────────────────
+
+const NUM_PARTICLES = 20;
+
+const BurstParticles: React.FC = () => {
+  const meshRef = useRef<THREE.InstancedMesh>(null);
+  const dummy = useMemo(() => new THREE.Object3D(), []);
+
+  const particles = useMemo(
+    () =>
+      Array.from({ length: NUM_PARTICLES }, () => ({
+        pos: new THREE.Vector3(0, 1, 0),
+        vel: new THREE.Vector3(
+          (Math.random() - 0.5) * 6,
+          Math.random() * 5 + 2,
+          (Math.random() - 0.5) * 6
+        ),
+        life: 0,
+      })),
+    []
+  );
+
+  useFrame((_, delta) => {
+    if (!meshRef.current) return;
+
+    for (let i = 0; i < NUM_PARTICLES; i++) {
+      const p = particles[i];
+      p.life += delta;
+      p.vel.y -= 9.8 * delta; // gravity
+      p.pos.addScaledVector(p.vel, delta);
+
+      // Reset particle when it falls below
+      if (p.pos.y < -3) {
+        p.pos.set(0, 1, 0);
+        p.vel.set(
+          (Math.random() - 0.5) * 6,
+          Math.random() * 5 + 2,
+          (Math.random() - 0.5) * 6
+        );
+        p.life = 0;
+      }
+
+      const fade = Math.max(0, 1 - p.life * 0.5);
+      dummy.position.copy(p.pos);
+      dummy.scale.setScalar(fade * 0.8);
+      dummy.updateMatrix();
+      meshRef.current.setMatrixAt(i, dummy.matrix);
+    }
+    meshRef.current.instanceMatrix.needsUpdate = true;
+  });
+
+  return (
+    <instancedMesh ref={meshRef} args={[undefined, undefined, NUM_PARTICLES]}>
