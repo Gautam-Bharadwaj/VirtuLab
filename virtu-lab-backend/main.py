@@ -67,3 +67,19 @@ async def analyze(req: AnalyzeRequest):
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
 
+
+@app.post("/api/vision-to-sim")
+async def vision_to_sim(req: VisionRequest):
+    try:
+        image_bytes = base64.b64decode(req.image_base64)
+
+        prompt = (
+            "Analyze this circuit diagram image from an Indian science textbook. "
+            "Return ONLY valid JSON with this structure: "
+            '{ "success": true, "circuit_type": "series"|"parallel", '
+            '"components": [{ "type": "battery"|"resistor"|"bulb"|"switch"|"ammeter"|"voltmeter", '
+            '"value": number|null, "unit": string|null }], "total_voltage": number|null }. '
+            'If not a clear circuit diagram return { "success": false, "reason": string, '
+            '"confidence": "low"|"medium"|"high" }.'
+        )
+
