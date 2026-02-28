@@ -1,4 +1,4 @@
-import React, { useRef } from 'react';
+import React from 'react';
 
 interface Props {
   onClose: () => void;
@@ -6,7 +6,7 @@ interface Props {
 
 export const VisionUploader: React.FC<Props> = ({ onClose }) => {
   return (
-    <div>
+    <div onClick={onClose} role="dialog">
       {/* VisionUploader stub */}
     </div>
   );
