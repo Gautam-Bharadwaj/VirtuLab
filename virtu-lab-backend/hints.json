@@ -1,0 +1,12 @@
+{
+    "approaching_overload": [
+        "Your current is climbing past 40 mA — what happens to a component when the current flowing through it exceeds its rated limit?",
+        "The ammeter reading is getting high. Can you recall how adding more components in parallel affects the total current drawn from the battery?",
+        "Look at the current value in your circuit right now. What does Ohm's Law predict will happen if you keep reducing the total resistance?"
+    ],
+    "overload_triggered": [
+        "Your circuit just failed from overload. What does Ohm's Law tell us happens to current when resistance drops very low?",
+        "The circuit overloaded — if P = I²R and the current doubled, by how much did the power increase?",
+        "Something caused the current to exceed the safe limit. Which variable in your circuit do you think pushed it over the edge?"
+    ],
+    "added_too_fast": [
