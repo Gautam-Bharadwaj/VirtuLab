@@ -11,7 +11,6 @@ const tabs: { id: LabType; label: string; icon: string }[] = [
 const languages: { code: Language; label: string; flag: string }[] = [
     { code: 'en', label: 'English', flag: '🇬🇧' },
     { code: 'hi', label: 'हिंदी', flag: '🇮🇳' },
-    { code: 'ta', label: 'தமிழ்', flag: '🇮🇳' },
 ];
 
 export const Navbar: React.FC = () => {

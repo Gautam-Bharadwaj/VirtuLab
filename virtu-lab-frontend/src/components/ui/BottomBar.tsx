@@ -45,7 +45,7 @@ export const BottomBar: React.FC = () => {
                 >
                     {/* Icon */}
                     <div className="w-10 h-10 rounded-lg bg-gradient-to-br from-white/[0.06] to-white/[0.02] flex items-center justify-center text-lg shrink-0 group-hover:scale-110 transition-transform">
-                        {stat.icon}
+                        📊
                     </div>
 
                     {/* Value + Label */}

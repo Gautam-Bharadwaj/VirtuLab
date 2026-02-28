@@ -101,3 +101,5 @@ workflow.set_entry_point("detect")
 workflow.add_edge("detect", "decide")
 workflow.add_conditional_edges("decide", route_intervention, {"generate": "generate", END: END})
 workflow.add_edge("generate", END)
+
+socratic_agent = workflow.compile()

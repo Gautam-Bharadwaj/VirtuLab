@@ -211,8 +211,8 @@ export const ControlsSidebar: React.FC = () => {
                 </svg>
               </motion.div>
               <div className="flex-1 min-w-0">
-                <h4 className="text-sm font-semibold text-red-300">{failureState.name}</h4>
-                <p className="text-[11px] text-red-400/70 mt-0.5 leading-relaxed">{failureState.description}</p>
+                <h4 className="text-sm font-semibold text-red-300">{failureState}</h4>
+                <p className="text-[11px] text-red-400/70 mt-0.5 leading-relaxed">{"Reset parameters to safe values"}</p>
               </div>
             </div>
           </motion.div>
