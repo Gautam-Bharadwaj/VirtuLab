@@ -49,3 +49,16 @@ def detect_misconception(state: AgentState) -> dict:
 
     return {"misconception": misconception}
 
+
+def decide_intervention(state: AgentState) -> dict:
+    return {"should_intervene": state.get("misconception") is not None}
+
+
+SYSTEM_PROMPT = (
+    "You are a Socratic science tutor. NEVER give the answer. "
+    "Ask ONE short question (max 2 sentences) that guides the student "
+    "to discover their mistake themselves. Reference the exact numbers "
+    "from the simulation state. Be warm and encouraging. "
+    "Respond in English only."
+)
+
