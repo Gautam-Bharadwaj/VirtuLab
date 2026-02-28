@@ -1,7 +1,126 @@
-from fastapi import FastAPI
+import asyncio
+import base64
+import json
+import os
+import re
+
+from fastapi import FastAPI, HTTPException
+from fastapi.middleware.cors import CORSMiddleware
+from pydantic import BaseModel
+from dotenv import load_dotenv
+from supabase import create_client
+from google import genai
+
+from agent import socratic_agent
+
+load_dotenv()
+
+genai_client = genai.Client(api_key=os.getenv("GEMINI_API_KEY"))
+
+supabase = create_client(
+    os.getenv("SUPABASE_URL"),
+    os.getenv("SUPABASE_KEY"),
+)
 
 app = FastAPI()
 
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=["*"],
+    allow_credentials=True,
+    allow_methods=["*"],
+    allow_headers=["*"],
+)
+
+
+class AnalyzeRequest(BaseModel):
+    sim_state: dict
+    student_id: str
+
+
+class VisionRequest(BaseModel):
+    image_base64: str
+
+
 @app.get("/health")
 def health():
-    return {"status": "ok"}
+    return {"status": "ok", "message": "VirtuLab Backend Running"}
+
+
+@app.post("/api/tutor/analyze")
+async def analyze(req: AnalyzeRequest):
+    try:
+        result = await asyncio.to_thread(
+            socratic_agent.invoke,
+            {
+                "sim_state": req.sim_state,
+                "misconception": None,
+                "should_intervene": False,
+                "response": "",
+            },
+        )
+        return {
+            "should_intervene": result["should_intervene"],
+            "message": result.get("response") or None,
+            "misconception": result.get("misconception"),
+        }
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
+
+
+@app.post("/api/vision-to-sim")
+async def vision_to_sim(req: VisionRequest):
+    try:
+        image_bytes = base64.b64decode(req.image_base64)
+
+        prompt = (
+            "Analyze this circuit diagram image from an Indian science textbook. "
+            "Return ONLY valid JSON with this structure: "
+            '{ "success": true, "circuit_type": "series"|"parallel", '
+            '"components": [{ "type": "battery"|"resistor"|"bulb"|"switch"|"ammeter"|"voltmeter", '
+            '"value": number|null, "unit": string|null }], "total_voltage": number|null }. '
+            'If not a clear circuit diagram return { "success": false, "reason": string, '
+            '"confidence": "low"|"medium"|"high" }.'
+        )
+
+        image_part = genai.types.Part.from_bytes(data=image_bytes, mime_type="image/png")
+
+        response = await asyncio.to_thread(
+            genai_client.models.generate_content,
+            model="gemini-2.0-flash",
+            contents=[prompt, image_part],
+        )
+
+        text = response.text.strip()
+        text = re.sub(r"^```(?:json)?\s*", "", text)
+        text = re.sub(r"\s*```$", "", text)
+
+        parsed = json.loads(text)
+        return parsed
+    except json.JSONDecodeError:
+        raise HTTPException(status_code=422, detail="Gemini returned non-JSON response")
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
+
+
+@app.post("/api/logs/record")
+async def record_log(log: dict):
+    try:
+        result = supabase.table("experiment_logs").insert(log).execute()
+        return {"id": result.data[0]["id"]}
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
+
+
+@app.get("/api/teacher/heatmap")
+async def heatmap():
+    try:
+        result = (
+            supabase.table("experiment_logs")
+            .select("*")
+            .order("created_at", desc=True)
+            .execute()
+        )
+        return result.data
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))

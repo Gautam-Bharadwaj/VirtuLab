@@ -1,0 +1,32 @@
+{
+    "approaching_overload": [
+        "Your current is climbing past 40 mA — what happens to a component when the current flowing through it exceeds its rated limit?",
+        "The ammeter reading is getting high. Can you recall how adding more components in parallel affects the total current drawn from the battery?",
+        "Look at the current value in your circuit right now. What does Ohm's Law predict will happen if you keep reducing the total resistance?"
+    ],
+    "overload_triggered": [
+        "Your circuit just failed from overload. What does Ohm's Law tell us happens to current when resistance drops very low?",
+        "The circuit overloaded — if P = I²R and the current doubled, by how much did the power increase?",
+        "Something caused the current to exceed the safe limit. Which variable in your circuit do you think pushed it over the edge?"
+    ],
+    "added_too_fast": [
+        "Your pH has already jumped above 7.5 and you've only added a small volume of base — what might happen if you keep adding at this rate?",
+        "The pH is rising quickly even though the base volume is still under 20 mL. Near the equivalence point, why does pH change so dramatically with each drop?",
+        "Look at how fast the pH is climbing. What would happen if you slowed down and added the base one drop at a time instead?"
+    ],
+    "endpoint_missed": [
+        "The pH shot way past the equivalence point. What clue from the indicator colour change should have told you to stop adding base?",
+        "You overshot the endpoint — thinking back, at what pH value were you supposed to stop, and what could you have done differently near that point?",
+        "The titration failed because too much base was added. How could watching the rate of pH change per drop have helped you spot the endpoint?"
+    ],
+    "approaching_denaturation": [
+        "Your reaction temperature is above 55°C now. What do you know about what happens to an enzyme's shape at high temperatures?",
+        "The temperature keeps rising — can you recall what 'denaturation' means and at roughly what temperature most enzymes start to lose their function?",
+        "Look at the temperature reading. How do you think the enzyme's active site is being affected as the thermal energy increases this much?"
+    ],
+    "denaturation_triggered": [
+        "The enzyme has denatured and the reaction stopped. What happened to the protein's three-dimensional structure at that temperature?",
+        "Your enzyme is no longer working. Can you explain why heating a protein beyond its optimal range causes it to permanently lose its catalytic ability?",
+        "The reaction flatlined after the temperature spike. If the enzyme's active site has changed shape, why can't the substrate bind anymore?"
+    ]
+}

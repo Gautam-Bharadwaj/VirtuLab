@@ -6,4 +6,5 @@ langgraph
 langchain
 supabase
 google-generativeai
+google-genai
 requests

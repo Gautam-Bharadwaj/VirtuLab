@@ -9,25 +9,23 @@ export default defineConfig({
       registerType: "autoUpdate",
       workbox: {
         globPatterns: ["**/*.{js,css,html,ico,png,svg,wasm,json}"],
+        runtimeCaching: [
+          {
+            urlPattern: /^https:\/\/.*railway\.app\/api\/.*/,
+            handler: "NetworkFirst",
+            options: { cacheName: "api-cache" },
+          },
+        ],
       },
       manifest: {
-        name: "VirtuLab",
+        name: "VirtuLab — Virtual Science Laboratory",
         short_name: "VirtuLab",
-        description: "AI-powered virtual science laboratory",
         theme_color: "#0a0a1a",
         background_color: "#0a0a1a",
         display: "standalone",
         icons: [
-          {
-            src: "icon-192.png",
-            sizes: "192x192",
-            type: "image/png",
-          },
-          {
-            src: "icon-512.png",
-            sizes: "512x512",
-            type: "image/png",
-          },
+          { src: "/icon-192.png", sizes: "192x192", type: "image/png" },
+          { src: "/icon-512.png", sizes: "512x512", type: "image/png" },
         ],
       },
     }),
@@ -39,6 +37,7 @@ export default defineConfig({
           three: ["three"],
           r3f: ["@react-three/fiber", "@react-three/drei"],
           vendor: ["react", "react-dom", "zustand", "framer-motion"],
+          charts: ["recharts"],
         },
       },
     },
