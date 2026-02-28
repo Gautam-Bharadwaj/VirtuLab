@@ -62,3 +62,24 @@ SYSTEM_PROMPT = (
     "Respond in English only."
 )
 
+
+def generate_socratic_question(state: AgentState) -> dict:
+    try:
+        llm = ChatGoogleGenerativeAI(
+            model="gemini-2.0-flash",
+            google_api_key=os.getenv("GEMINI_API_KEY"),
+            temperature=0.7,
+        )
+
+        user_content = (
+            f"Simulation state:\n{json.dumps(state['sim_state'], indent=2)}\n\n"
+            f"Detected misconception code: {state['misconception']}"
+        )
+
+        messages = [
+            SystemMessage(content=SYSTEM_PROMPT),
+            HumanMessage(content=user_content),
+        ]
+
+        result = llm.invoke(messages)
+        return {"response": result.content}
