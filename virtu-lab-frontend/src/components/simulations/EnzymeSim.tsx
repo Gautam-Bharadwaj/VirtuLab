@@ -108,3 +108,58 @@ const Products: React.FC<{ rate: number }> = ({ rate }) => {
     <instancedMesh ref={meshRef} args={[undefined, undefined, NUM_PRODUCTS]}>
       <octahedronGeometry args={[0.15]} />
       <meshStandardMaterial color="#facc15" emissive="#facc15" emissiveIntensity={0.8} />
+    </instancedMesh>
+  );
+};
+
+// ─── Denaturation Fragments ──────────────────────────────────────────
+
+const NUM_FRAGMENTS = 5;
+
+const DenatureFragments: React.FC = () => {
+  const meshRef = useRef<THREE.InstancedMesh>(null);
+  const dummy = useMemo(() => new THREE.Object3D(), []);
+  const fragmentData = useMemo(
+    () =>
+      Array.from({ length: NUM_FRAGMENTS }, (_, i) => ({
+        offset: new THREE.Vector3(
+          (Math.random() - 0.5) * 2,
+          (Math.random() - 0.5) * 2,
+          (Math.random() - 0.5) * 2
+        ),
+        rotSpeed: Math.random() * 2 + 0.5,
+        driftY: 0.02 + Math.random() * 0.02,
+        driftX: (Math.random() - 0.5) * 0.01,
+        baseScale: 0.3 + Math.random() * 0.3,
+        idx: i,
+      })),
+    []
+  );
+
+  useFrame((state) => {
+    if (!meshRef.current) return;
+
+    for (let i = 0; i < NUM_FRAGMENTS; i++) {
+      const f = fragmentData[i];
+      const t = state.clock.elapsedTime;
+
+      dummy.position.set(
+        f.offset.x + Math.sin(t * 0.5 + f.idx) * 0.3 + t * f.driftX * 5,
+        f.offset.y + t * f.driftY * 3,
+        f.offset.z + Math.cos(t * 0.3 + f.idx) * 0.2
+      );
+      dummy.rotation.set(t * f.rotSpeed, t * f.rotSpeed * 0.7, 0);
+      dummy.scale.setScalar(f.baseScale);
+      dummy.updateMatrix();
+      meshRef.current.setMatrixAt(i, dummy.matrix);
+    }
+    meshRef.current.instanceMatrix.needsUpdate = true;
+  });
+
+  return (
+    <instancedMesh ref={meshRef} args={[undefined, undefined, NUM_FRAGMENTS]}>
+      <icosahedronGeometry args={[0.5, 0]} />
+      <meshStandardMaterial color="#555555" roughness={0.8} />
+    </instancedMesh>
+  );
+};
