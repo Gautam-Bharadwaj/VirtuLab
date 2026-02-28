@@ -163,3 +163,102 @@ const DenatureFragments: React.FC = () => {
     </instancedMesh>
   );
 };
+
+// ─── Thermometer ─────────────────────────────────────────────────────
+
+const Thermometer: React.FC<{ temperature: number }> = ({ temperature }) => {
+  const fillRef = useRef<THREE.MeshStandardMaterial>(null);
+  const targetColor = useMemo(() => new THREE.Color(), []);
+  const cold = useMemo(() => new THREE.Color('#3b82f6'), []);
+  const hot = useMemo(() => new THREE.Color('#ef4444'), []);
+
+  const fillHeight = Math.max(0.05, (temperature / 100) * 3);
+  const t = Math.min(Math.max(temperature / 100, 0), 1);
+
+  useFrame(() => {
+    if (fillRef.current) {
+      targetColor.copy(cold).lerp(hot, t);
+      fillRef.current.color.lerp(targetColor, 0.1);
+    }
+  });
+
+  return (
+    <group position={[4, -1.5, 0]}>
+      {/* Background bar */}
+      <mesh position={[0, 1.6, -0.05]}>
+        <boxGeometry args={[0.35, 3.4, 0.1]} />
+        <meshStandardMaterial color="#1a1a2e" />
+      </mesh>
+      {/* Fill bar */}
+      <mesh position={[0, fillHeight / 2, 0]}>
+        <boxGeometry args={[0.25, fillHeight, 0.15]} />
+        <meshStandardMaterial ref={fillRef} color="#3b82f6" emissive="#3b82f6" emissiveIntensity={0.3} />
+      </mesh>
+      {/* Bulb at bottom */}
+      <mesh position={[0, -0.15, 0]}>
+        <sphereGeometry args={[0.2, 16, 16]} />
+        <meshStandardMaterial color="#ef4444" emissive="#ef4444" emissiveIntensity={0.4} />
+      </mesh>
+    </group>
+  );
+};
+
+// ─── Main Component ──────────────────────────────────────────────────
+
+const EnzymeSim: React.FC = () => {
+  const reactionRate = useLabStore((s) => s.enzyme.outputs.reactionRate);
+  const normalizedRate = useLabStore((s) => s.enzyme.outputs.normalizedRate);
+  const temperature = useLabStore((s) => s.enzyme.inputs.temperature);
+  const failureState = useLabStore((s) => s.failureState);
+  const isRunning = useLabStore((s) => s.isRunning);
+
+  const isDenatured = failureState === 'DENATURED';
+  const enzymeRef = useRef<THREE.Mesh>(null);
+
+  useFrame((_state, delta) => {
+    if (!enzymeRef.current) return;
+
+    if (isDenatured) {
+      // Slowly shrink away
+      enzymeRef.current.scale.lerp(new THREE.Vector3(0.01, 0.01, 0.01), 0.02);
+    } else {
+      enzymeRef.current.scale.set(1, 1, 1);
+      if (isRunning) {
+        enzymeRef.current.rotation.x += delta * 0.4 * normalizedRate;
+        enzymeRef.current.rotation.y += delta * 0.6 * normalizedRate;
+      }
+    }
+  });
+
+  return (
+    <group>
+      {/* Central Enzyme */}
+      {!isDenatured && (
+        <mesh ref={enzymeRef}>
+          <icosahedronGeometry args={[1.0, 1]} />
+          <meshStandardMaterial
+            color="#7c3aed"
+            emissive="#7c3aed"
+            emissiveIntensity={0.3}
+            roughness={0.4}
+            metalness={0.1}
+          />
+        </mesh>
+      )}
+
+      {/* Denaturation Fragments */}
+      {isDenatured && <DenatureFragments />}
+
+      {/* Substrates */}
+      <Substrates speed={normalizedRate * 2} frozen={isDenatured} />
+
+      {/* Products */}
+      {!isDenatured && isRunning && <Products rate={reactionRate} />}
+
+      {/* Thermometer */}
+      <Thermometer temperature={temperature} />
+    </group>
+  );
+};
+
+export default EnzymeSim;
