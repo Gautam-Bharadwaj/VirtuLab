@@ -113,3 +113,58 @@ const Battery: React.FC = () => (
     <Text position={[0, 1.1, 0]} fontSize={0.35} color="#ffffff" anchorX="center" anchorY="middle">
       +
     </Text>
+  </group>
+);
+
+// ─── Resistor ────────────────────────────────────────────────────────
+
+const BAND_COLORS = ['#ef4444', '#22c55e', '#000000'];
+
+const Resistor: React.FC = () => (
+  <group position={[0, 1.5, 0]} rotation={[0, 0, Math.PI / 2]}>
+    {/* Body */}
+    <mesh>
+      <boxGeometry args={[1.2, 0.4, 0.4]} />
+      <meshStandardMaterial color="#a0845c" roughness={0.7} />
+    </mesh>
+    {/* Color bands */}
+    {BAND_COLORS.map((c, i) => (
+      <mesh key={i} position={[-0.35 + i * 0.3, 0, 0]}>
+        <boxGeometry args={[0.08, 0.42, 0.42]} />
+        <meshBasicMaterial color={c} />
+      </mesh>
+    ))}
+  </group>
+);
+
+// ─── LED Bulb ────────────────────────────────────────────────────────
+
+const LEDBulb: React.FC<{
+  brightness: number;
+  isOverload: boolean;
+}> = ({ brightness, isOverload }) => {
+  const meshRef = useRef<THREE.Mesh>(null);
+  const lightRef = useRef<THREE.PointLight>(null);
+
+  useFrame((state) => {
+    if (!meshRef.current) return;
+
+    if (isOverload) {
+      // Pulse scale
+      const pulse = 1 + Math.sin(state.clock.elapsedTime * 12) * 0.15;
+      meshRef.current.scale.setScalar(pulse);
+    } else {
+      meshRef.current.scale.setScalar(1);
+    }
+  });
+
+  const emissiveColor = isOverload ? '#FF0000' : '#FFD700';
+  const emissiveIntensity = isOverload ? 4 : (brightness / 100) * 3;
+
+  return (
+    <group position={[3, 0, 0]}>
+      <mesh ref={meshRef}>
+        <sphereGeometry args={[0.4, 32, 32]} />
+        <meshStandardMaterial
+          color={isOverload ? '#ff4444' : '#ffffcc'}
+          emissive={emissiveColor}
