@@ -1,13 +1,12 @@
 import { useState } from "react";
 
 export function useVisionToSim() {
-  const [isLoading, setIsLoading] = useState(false);
-  const [result, setResult] = useState<any>(null);
-  const [error, setError] = useState<string | null>(null);
+  const [isLoading] = useState(false);
+  const [result] = useState<unknown>(null);
+  const [error] = useState<string | null>(null);
 
-  const analyze = async (file: File) => {
-    // Basic stub
-    console.log("Analyze method stub for", file);
+  const analyze = async (_file: File) => {
+    // Stub — will be implemented later
   };
 
   return { isLoading, result, error, analyze };
