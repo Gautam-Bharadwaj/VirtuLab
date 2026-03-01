@@ -106,3 +106,30 @@ function GravityAnimation() {
 function CircuitAnimation() {
   return (
     <div className="absolute inset-0 flex items-center justify-center overflow-hidden opacity-20">
+      {/* Animated circuit paths */}
+      <svg className="w-full h-full" viewBox="0 0 400 300">
+        <motion.path
+          d="M 50 150 L 120 150 L 120 80 L 280 80 L 280 150 L 350 150"
+          fill="none"
+          stroke="#F59E0B"
+          strokeWidth="2"
+          initial={{ pathLength: 0 }}
+          animate={{ pathLength: 1 }}
+          transition={{ duration: 2, repeat: Infinity, repeatType: 'loop' }}
+        />
+        <motion.path
+          d="M 50 150 L 120 150 L 120 220 L 280 220 L 280 150 L 350 150"
+          fill="none"
+          stroke="#F59E0B"
+          strokeWidth="2"
+          initial={{ pathLength: 0 }}
+          animate={{ pathLength: 1 }}
+          transition={{ duration: 2, delay: 0.5, repeat: Infinity, repeatType: 'loop' }}
+        />
+        {/* Moving electrons */}
+        {[0, 1, 2, 3, 4].map((i) => (
+          <motion.circle
+            key={i}
+            r="3"
+            fill="#FBBF24"
+            initial={{ offsetDistance: '0%' }}
