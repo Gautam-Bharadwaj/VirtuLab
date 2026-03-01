@@ -1,13 +1,23 @@
-import { Routes, Route } from 'react-router-dom'
+import { Routes, Route, useParams } from 'react-router-dom'
+import { useEffect } from 'react'
 import { LabShell } from './components/ui/LabShell'
-import SimulationEngine from './components/simulations/SimulationEngine'
+import { SimulationEngine } from './components/simulations/SimulationEngine'
 import { ControlsSidebar } from './components/ui/ControlsSidebar'
 import { AITutorPanel } from './components/ui/AITutorPanel'
 import { TeacherDashboard } from './pages/TeacherDashboard'
+import { Navigate } from 'react-router-dom'
 import { useLabStore } from './store/useLabStore'
 
 function MainLab() {
-  const failureState = useLabStore((s) => s.failureState)
+  const { labId } = useParams();
+  const setActiveLab = useLabStore((s) => s.setActiveLab);
+  const failureState = useLabStore((s) => s.failureState);
+
+  useEffect(() => {
+    if (labId) {
+      setActiveLab(labId as any);
+    }
+  }, [labId, setActiveLab]);
 
   return (
     <LabShell
@@ -25,7 +35,7 @@ function MainLab() {
                      border border-red-500/30"
         >
           <span className="text-lg">⚠️</span>
-          <span className="text-sm font-medium">{failureState}</span>
+          <span className="text-sm font-medium">{failureState.name}</span>
         </div>
       )}
     </LabShell>
@@ -35,7 +45,8 @@ function MainLab() {
 export default function App() {
   return (
     <Routes>
-      <Route path="/" element={<MainLab />} />
+      <Route path="/" element={<Navigate to="/lab/circuit" replace />} />
+      <Route path="/lab/:labId" element={<MainLab />} />
       <Route path="/teacher" element={<TeacherDashboard />} />
     </Routes>
   )

@@ -1,228 +1,83 @@
-import React, { useRef, useMemo } from 'react';
-import { useFrame } from '@react-three/fiber';
-import { Text } from '@react-three/drei';
-import * as THREE from 'three';
+import React from 'react';
+import { motion } from 'framer-motion';
 import { useLabStore } from '../../store/useLabStore';
 
-// ─── Animated Drops ──────────────────────────────────────────────────
+export const TitrationSim: React.FC = () => {
+  const { inputs } = useLabStore();
 
-const NUM_DROPS = 2;
+  // Base volume usually comes from a slider in the sidebar inputs
+  const baseVolume = inputs.baseVolume || 0;
 
-const LiquidDrops: React.FC<{ active: boolean }> = ({ active }) => {
-  const meshRef = useRef<THREE.InstancedMesh>(null);
-  const dummy = useMemo(() => new THREE.Object3D(), []);
-  const dropState = useRef(
-    Array.from({ length: NUM_DROPS }, (_, i) => ({
-      y: 1.5 - i * 0.8, // stagger start positions
-      speed: 3 + Math.random(),
-    }))
-  );
+  // Equivalence point logic
+  const eqPoint = 25.0;
+  const ph = baseVolume < eqPoint
+    ? 1 + (baseVolume / eqPoint) * 6
+    : 7 + (baseVolume - eqPoint) * 1.5;
 
-  useFrame((_, delta) => {
-    if (!meshRef.current) return;
-
-    for (let i = 0; i < NUM_DROPS; i++) {
-      const drop = dropState.current[i];
-
-      if (active) {
-        drop.y -= drop.speed * delta;
-        // Reset when drop reaches liquid surface
-        if (drop.y < 0) {
-          drop.y = 1.5;
-          drop.speed = 3 + Math.random();
-        }
-      }
-
-      dummy.position.set(0, drop.y, 0);
-      dummy.scale.setScalar(active ? 1 : 0);
-      dummy.updateMatrix();
-      meshRef.current.setMatrixAt(i, dummy.matrix);
-    }
-    meshRef.current.instanceMatrix.needsUpdate = true;
-  });
+  // Color logic
+  const solutionColor = baseVolume > 24.5
+    ? baseVolume > 25.5 ? 'bg-pink-500/60' : 'bg-pink-300/40'
+    : 'bg-blue-100/10';
 
   return (
-    <instancedMesh ref={meshRef} args={[undefined, undefined, NUM_DROPS]}>
-      <sphereGeometry args={[0.06, 12, 12]} />
-      <meshStandardMaterial color="#87ceeb" emissive="#87ceeb" emissiveIntensity={0.5} transparent opacity={0.8} />
-    </instancedMesh>
-  );
-};
+    <div className="relative w-full h-full flex items-center justify-center p-12">
+      <div className="absolute top-10 flex gap-4">
+        <div className="glass-panel px-6 py-2 border-emerald-500/20 rounded-full flex gap-3 text-xs font-bold">
+          <span className="text-white/40 uppercase tracking-widest">Indicator:</span>
+          <span className="text-pink-400">Phenolphthalein</span>
+        </div>
+      </div>
 
-// ─── Burst Particles (OVERSHOOT) ─────────────────────────────────────
-
-const NUM_PARTICLES = 20;
-
-const BurstParticles: React.FC = () => {
-  const meshRef = useRef<THREE.InstancedMesh>(null);
-  const dummy = useMemo(() => new THREE.Object3D(), []);
-
-  const particles = useMemo(
-    () =>
-      Array.from({ length: NUM_PARTICLES }, () => ({
-        pos: new THREE.Vector3(0, 1, 0),
-        vel: new THREE.Vector3(
-          (Math.random() - 0.5) * 6,
-          Math.random() * 5 + 2,
-          (Math.random() - 0.5) * 6
-        ),
-        life: 0,
-      })),
-    []
-  );
-
-  useFrame((_, delta) => {
-    if (!meshRef.current) return;
-
-    for (let i = 0; i < NUM_PARTICLES; i++) {
-      const p = particles[i];
-      p.life += delta;
-      p.vel.y -= 9.8 * delta; // gravity
-      p.pos.addScaledVector(p.vel, delta);
-
-      // Reset particle when it falls below
-      if (p.pos.y < -3) {
-        p.pos.set(0, 1, 0);
-        p.vel.set(
-          (Math.random() - 0.5) * 6,
-          Math.random() * 5 + 2,
-          (Math.random() - 0.5) * 6
-        );
-        p.life = 0;
-      }
-
-      const fade = Math.max(0, 1 - p.life * 0.5);
-      dummy.position.copy(p.pos);
-      dummy.scale.setScalar(fade * 0.8);
-      dummy.updateMatrix();
-      meshRef.current.setMatrixAt(i, dummy.matrix);
-    }
-    meshRef.current.instanceMatrix.needsUpdate = true;
-  });
-
-  return (
-    <instancedMesh ref={meshRef} args={[undefined, undefined, NUM_PARTICLES]}>
-      <sphereGeometry args={[0.1, 8, 8]} />
-      <meshStandardMaterial color="#ff00aa" emissive="#ff00aa" emissiveIntensity={2} />
-    </instancedMesh>
-  );
-};
-
-// ─── Main Component ──────────────────────────────────────────────────
-
-const TitrationSim: React.FC = () => {
-  const pH = useLabStore((s) => s.titration.outputs.pH);
-  const colorHex = useLabStore((s) => s.titration.outputs.colorHex);
-  const baseVolume = useLabStore((s) => s.titration.inputs.baseVolume);
-  const failureState = useLabStore((s) => s.failureState);
-  const isRunning = useLabStore((s) => s.isRunning);
-
-  const isOvershoot = failureState === 'OVERSHOOT';
-  const liquidHeight = Math.max(0.05, (baseVolume / 50) * 2.0);
-
-  // Smooth color lerp
-  const liquidMatRef = useRef<THREE.MeshStandardMaterial>(null);
-  const targetColor = useMemo(() => new THREE.Color(), []);
-  const beakerGroupRef = useRef<THREE.Group>(null);
-
-  const prevVolumeRef = useRef(baseVolume);
-
-  useFrame((state) => {
-    // Smooth liquid color transition
-    if (liquidMatRef.current) {
-      targetColor.set(isOvershoot ? '#cc0066' : colorHex);
-      liquidMatRef.current.color.lerp(targetColor, 0.08);
-    }
-
-    // Beaker shake on OVERSHOOT
-    if (beakerGroupRef.current) {
-      if (isOvershoot) {
-        beakerGroupRef.current.position.x = Math.sin(state.clock.elapsedTime * 30) * 0.12;
-        beakerGroupRef.current.rotation.z = Math.sin(state.clock.elapsedTime * 25) * 0.03;
-      } else {
-        beakerGroupRef.current.position.x = 0;
-        beakerGroupRef.current.rotation.z = 0;
-      }
-    }
-
-    prevVolumeRef.current = baseVolume;
-  });
-
-  const isDropping = isRunning && baseVolume < 50 && !isOvershoot;
-
-  return (
-    <group>
-      {/* Burette */}
-      <group position={[0, 3, 0]}>
-        <mesh>
-          <cylinderGeometry args={[0.1, 0.1, 3, 16]} />
-          <meshStandardMaterial color="#cccccc" transparent opacity={0.3} roughness={0.1} metalness={0.2} />
-        </mesh>
-        {/* Tap knob */}
-        <mesh position={[0.2, -1.2, 0]} rotation={[0, 0, Math.PI / 2]}>
-          <cylinderGeometry args={[0.06, 0.06, 0.3, 8]} />
-          <meshStandardMaterial color="#444444" metalness={0.8} />
-        </mesh>
-      </group>
-
-      {/* Drops */}
-      <LiquidDrops active={isDropping} />
-
-      {/* Beaker Group (shakes on OVERSHOOT) */}
-      <group ref={beakerGroupRef}>
-        {/* Glass beaker */}
-        <mesh position={[0, 0, 0]}>
-          <cylinderGeometry args={[1.2, 1.0, 2.5, 32, 1, true]} />
-          <meshStandardMaterial
-            color="#ffffff"
-            transparent
-            opacity={0.15}
-            side={THREE.DoubleSide}
-            roughness={0.05}
-            metalness={0.1}
+      <div className="flex flex-col items-center gap-4">
+        {/* Burette */}
+        <div className="relative w-8 h-[300px] border-2 border-white/20 rounded-b-lg bg-white/5 flex flex-col justify-end overflow-hidden">
+          {/* Base Liquid */}
+          <motion.div
+            className="w-full bg-blue-300/30"
+            style={{ height: `${100 - (baseVolume * 2)}%` }}
           />
-        </mesh>
-        {/* Beaker bottom */}
-        <mesh position={[0, -1.25, 0]} rotation={[Math.PI / 2, 0, 0]}>
-          <circleGeometry args={[1.0, 32]} />
-          <meshStandardMaterial color="#ffffff" transparent opacity={0.1} side={THREE.DoubleSide} />
-        </mesh>
+          {/* Scale marks */}
+          {Array.from({ length: 10 }).map((_, i) => (
+            <div key={i} className="absolute w-2 h-0.5 bg-white/40 right-0" style={{ bottom: `${i * 10}%` }} />
+          ))}
+        </div>
 
-        {/* Liquid */}
-        <mesh position={[0, -1.25 + liquidHeight / 2, 0]}>
-          <cylinderGeometry args={[1.0, 0.9, liquidHeight, 32]} />
-          <meshStandardMaterial
-            ref={liquidMatRef}
-            color={colorHex}
-            roughness={0.3}
-            transparent
-            opacity={0.85}
+        {/* Tap */}
+        <div className="w-12 h-4 bg-zinc-800 rounded-sm -mt-1 z-10" />
+
+        {/* Conical Flask */}
+        <div className="relative w-48 h-64 mt-4">
+          {/* Flask Outline */}
+          <svg viewBox="0 0 100 120" className="w-full h-full fill-none stroke-white/20 stroke-1 overflow-visible">
+            <path d="M 40 10 L 40 40 L 10 110 Q 10 120 20 120 L 80 120 Q 90 120 90 110 L 60 40 L 60 10 Z" />
+
+            {/* Solution inside */}
+            <motion.path
+              d={`M ${40 + (100 - ph * 2) / 10} 120 L ${60 - (100 - ph * 2) / 10} 120 L 70 60 L 30 60 Z`}
+              className={`${solutionColor} transition-colors duration-500`}
+              style={{ opacity: 0.6 }}
+            />
+          </svg>
+
+          {/* Reflection */}
+          <div className="absolute top-10 left-1/4 w-4 h-32 bg-white/5 rounded-full blur-xl" />
+        </div>
+      </div>
+
+      {/* Real-time pH Meter */}
+      <div className="absolute bottom-10 right-10 glass-panel p-6 border-emerald-500/30 rounded-3xl bg-emerald-500/5 min-w-[200px]">
+        <div className="text-[10px] uppercase font-bold text-emerald-400 mb-2 tracking-widest">pH Monitoring System</div>
+        <div className="flex items-end gap-2">
+          <div className="text-5xl font-mono text-white leading-none">{ph.toFixed(2)}</div>
+          <div className="text-xs text-white/40 mb-1">pH</div>
+        </div>
+        <div className="mt-4 w-full h-1 bg-white/10 rounded-full overflow-hidden">
+          <motion.div
+            className="h-full bg-gradient-to-r from-red-500 via-green-500 to-purple-500"
+            style={{ width: `${(ph / 14) * 100}%` }}
           />
-        </mesh>
-      </group>
-
-      {/* pH floating text */}
-      <Text
-        position={[2.2, 1.8, 0]}
-        fontSize={0.5}
-        color="#ffffff"
-        anchorX="left"
-        anchorY="middle"
-        font={undefined}
-      >
-        {`pH ${pH.toFixed(2)}`}
-      </Text>
-
-      {/* pH indicator color swatch */}
-      <mesh position={[2.2, 1.2, 0]}>
-        <boxGeometry args={[0.6, 0.3, 0.05]} />
-        <meshBasicMaterial color={isOvershoot ? '#cc0066' : colorHex} />
-      </mesh>
-
-      {/* Overshoot burst particles */}
-      {isOvershoot && <BurstParticles />}
-    </group>
+        </div>
+      </div>
+    </div>
   );
 };
-
-export default TitrationSim;

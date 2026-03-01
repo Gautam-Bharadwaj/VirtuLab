@@ -71,9 +71,30 @@ export const LabShell: React.FC<LabShellProps> = ({ children, sidebar, tutor }) 
         {/* Center: Simulation Canvas — takes remaining space */}
         <main
           id="simulation-container"
-          className={`flex-1 min-w-0 p-4 pb-24 overflow-hidden h-full transition-[margin] duration-300 ${tutorOpen ? 'mr-[320px]' : 'mr-0'}`}
+          className={`flex-1 min-w-0 p-4 pb-24 overflow-hidden h-full flex flex-col transition-[margin] duration-300 ${tutorOpen ? 'mr-[320px]' : 'mr-0'}`}
         >
-          {children}
+          {/* OLabs Style Tab Bar */}
+          <div className="flex-shrink-0 flex items-center gap-1 p-1 bg-white/[0.03] border border-white/[0.08] rounded-2xl mb-4 w-fit self-center z-10">
+            {(["theory", "procedure", "simulator", "resources"] as const).map((tab) => {
+              const { activeTab, setActiveTab } = (useLabStore as any)();
+              return (
+                <button
+                  key={tab}
+                  onClick={() => setActiveTab(tab)}
+                  className={`px-6 py-2 rounded-xl text-xs font-bold uppercase tracking-widest transition-all duration-300 ${activeTab === tab
+                    ? "bg-orange-500 text-black shadow-lg shadow-orange-500/20"
+                    : "text-white/40 hover:text-white/80 hover:bg-white/5"
+                    }`}
+                >
+                  {tab}
+                </button>
+              );
+            })}
+          </div>
+
+          <div className="flex-1 min-h-0 relative">
+            {children}
+          </div>
         </main>
 
         {/* Right: AI Tutor Panel (positioned fixed inside the aside component) */}

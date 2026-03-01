@@ -100,7 +100,7 @@ const AITutorPanel: React.FC = () => {
   const offlineFallback = useCallback(async () => {
     const hints = await loadHints();
     const { failureState: fs } = useLabStore.getState();
-    const key = fs ? failureToHintKey(fs) : 'general';
+    const key = fs ? failureToHintKey(fs.name) : 'general';
     const hint = pickRandomHint(hints, key);
     addMsg('ai', hint);
   }, [addMsg]);
@@ -150,7 +150,7 @@ const AITutorPanel: React.FC = () => {
     if (failureState) {
       addMsg(
         'ai',
-        `⚠️ **${failureState}** — ${"A failure condition was triggered"}\n\nLet me help you understand what went wrong...`
+        `⚠️ **${failureState.name}** — ${failureState.description}\n\nLet me help you understand what went wrong...`
       );
     }
   }, [failureState, addMsg]);

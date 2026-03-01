@@ -1,422 +1,300 @@
 import { create } from "zustand";
 
-// ─── Type Definitions ────────────────────────────────────────────────
+export type LabType = "circuit" | "titration" | "enzyme" | "pendulum" | "gravity";
+export type Language = "en" | "hi" | "ta";
 
-export type LabType = "circuit" | "titration" | "enzyme";
-export type Language = "en" | "hi";
-
-interface CircuitInputs {
-  voltage: number;
-  resistance: number;
+interface ChatMessage {
+  id: string;
+  role: "user" | "assistant";
+  text: string;
+  timestamp: number;
 }
 
-interface CircuitOutputs {
-  current: number;
-  power: number;
-  brightnessPercent: number;
+interface StatReading {
+  label: string;
+  value: string;
+  unit: string;
+  icon: string;
+  trend?: "up" | "down" | "stable";
 }
 
-interface TitrationInputs {
-  baseVolume: number;
+export interface FailureState {
+  name: string;
+  description: string;
 }
 
-interface TitrationOutputs {
-  pH: number;
-  colorHex: string;
+/* ─── Per-lab default inputs ─── */
+export interface LabInputs {
+  [key: string]: number;
 }
 
-interface EnzymeInputs {
-  temperature: number;
-  substrateConc: number;
-}
+const defaultInputs: Record<LabType, LabInputs> = {
+  circuit: { voltage: 5, resistance: 20 },
+  titration: { baseVolume: 0 },
+  enzyme: { temperature: 37, substrateConcentration: 5 },
+  pendulum: { length: 2.0, gravity: 9.8, angle: 45 },
+  gravity: { planetMass: 100, objectDistance: 50 },
+};
 
-interface EnzymeOutputs {
-  reactionRate: number;
-  normalizedRate: number;
-}
+/* ─── Stats per lab ─── */
+const circuitStats: StatReading[] = [
+  { label: "Voltage", value: "5.0", unit: "V", icon: "⚡", trend: "stable" },
+  { label: "Current", value: "0.25", unit: "A", icon: "〰️", trend: "up" },
+  { label: "Resistance", value: "20", unit: "Ω", icon: "🔧", trend: "stable" },
+  { label: "Power", value: "1.25", unit: "W", icon: "💡", trend: "up" },
+];
 
-export interface LabState {
-  // Global
+const titrationStats: StatReading[] = [
+  { label: "pH Level", value: "7.0", unit: "pH", icon: "🧪", trend: "stable" },
+  { label: "Volume", value: "25.0", unit: "mL", icon: "💧", trend: "up" },
+  { label: "Molarity", value: "0.1", unit: "M", icon: "⚗️", trend: "stable" },
+  { label: "Temperature", value: "25.0", unit: "°C", icon: "🌡️", trend: "stable" },
+];
+
+const enzymeStats: StatReading[] = [
+  { label: "Temperature", value: "37.0", unit: "°C", icon: "🌡️", trend: "stable" },
+  { label: "pH Level", value: "6.8", unit: "pH", icon: "🧬", trend: "stable" },
+  { label: "Substrate", value: "5.0", unit: "mM", icon: "🔬", trend: "down" },
+  { label: "Rate", value: "0.42", unit: "μM/s", icon: "📈", trend: "up" },
+];
+
+const pendulumStats: StatReading[] = [
+  { label: "Period", value: "2.84", unit: "s", icon: "⏱️", trend: "stable" },
+  { label: "Frequency", value: "0.35", unit: "Hz", icon: "🔄", trend: "stable" },
+  { label: "Velocity", value: "0.00", unit: "m/s", icon: "💨", trend: "stable" },
+  { label: "Potential E", value: "4.5", unit: "J", icon: "🔋", trend: "down" },
+];
+
+const gravityStats: StatReading[] = [
+  { label: "Force", value: "98.1", unit: "N", icon: "💥", trend: "stable" },
+  { label: "Accel", value: "9.81", unit: "m/s²", icon: "🚀", trend: "stable" },
+  { label: "Orbit Vel", value: "7.9", unit: "km/s", icon: "🌍", trend: "up" },
+  { label: "Energy", value: "1240", unit: "kJ", icon: "✨", trend: "stable" },
+];
+
+const getStatsForLab = (lab: LabType): StatReading[] => {
+  switch (lab) {
+    case "circuit": return circuitStats;
+    case "titration": return titrationStats;
+    case "enzyme": return enzymeStats;
+    case "pendulum": return pendulumStats;
+    case "gravity": return gravityStats;
+    default: return circuitStats;
+  }
+};
+
+const welcomeMessages: ChatMessage[] = [
+  {
+    id: "welcome-1",
+    role: "assistant",
+    text: "Welcome to VirtuLab! 🧪 I'm your AI Lab Mentor. I'll guide you through experiments, explain concepts, and help you learn. Select an experiment tab above to get started!",
+    timestamp: Date.now(),
+  },
+];
+
+/* ─── Store interface ─── */
+interface LabState {
+  // Active lab
+  /** Currently selected laboratory simulation */
   activeLab: LabType;
-  isRunning: boolean;
-  running: boolean; // alias for isRunning (Gautam's UI uses this)
-  failureState: string | null;
-  mistakeCount: number;
-  sessionStartTime: number | null;
-
-  // Per-experiment
-  circuit: { inputs: CircuitInputs; outputs: CircuitOutputs };
-  titration: { inputs: TitrationInputs; outputs: TitrationOutputs };
-  enzyme: { inputs: EnzymeInputs; outputs: EnzymeOutputs };
-
-  // Flat inputs accessor (Gautam's ControlsSidebar uses inputs[key])
-  inputs: Record<string, number>;
-
-  // UI State
-  sidebarOpen: boolean;
-  tutorOpen: boolean;
-  showSkillRadar: boolean;
-  score: number;
-  experimentDuration: number;
-  language: Language;
-
-  // Stats for BottomBar
-  stats: Array<{
-    label: string;
-    value: string;
-    unit: string;
-    trend: "up" | "down" | "stable";
-  }>;
-
-  // Actions
   setActiveLab: (lab: LabType) => void;
+
+  // Language
+  language: Language;
+  setLanguage: (lang: Language) => void;
+
+  // Dynamic inputs per lab
+  inputs: LabInputs;
   updateInput: (key: string, value: number) => void;
+
+  // Experiment run state
+  running: boolean;
   startExperiment: () => void;
   stopExperiment: () => void;
   resetExperiment: () => void;
-  recordMistake: () => void;
+
+  // Failure state
+  failureState: FailureState | null;
+  setFailureState: (failure: FailureState | null) => void;
+
+  // Experiment performance tracking
+  score: number;
+  mistakeCount: number;
+  experimentStartTime: number | null;
+  experimentDuration: number;
+  showSkillRadar: boolean;
+  setShowSkillRadar: (show: boolean) => void;
+
+  // Chat
+  messages: ChatMessage[];
+  addMessage: (role: "user" | "assistant", text: string) => void;
+  clearMessages: () => void;
+
+  // Stats
+  stats: StatReading[];
+  setStats: (stats: StatReading[]) => void;
+
+  // Sidebar collapse
+  sidebarOpen: boolean;
   toggleSidebar: () => void;
+
+  // Tutor panel
+  tutorOpen: boolean;
   toggleTutor: () => void;
-  setShowSkillRadar: (v: boolean) => void;
-  setLanguage: (l: Language) => void;
+
+  // OLabs Tabs
+  activeTab: "theory" | "procedure" | "simulator" | "resources";
+  setActiveTab: (tab: "theory" | "procedure" | "simulator" | "resources") => void;
 }
-
-// ─── Compute Helpers ─────────────────────────────────────────────────
-
-function computeCircuit(inputs: CircuitInputs): {
-  outputs: CircuitOutputs;
-  failure: string | null;
-} {
-  const current = inputs.voltage / inputs.resistance;
-  const power = current * current * inputs.resistance;
-  const brightnessPercent = Math.min((current / 0.05) * 100, 100);
-  const failure = current > 0.05 ? "OVERLOAD" : null;
-  return { outputs: { current, power, brightnessPercent }, failure };
-}
-
-function computeTitration(inputs: TitrationInputs): {
-  outputs: TitrationOutputs;
-  failure: string | null;
-} {
-  const pH = 7 + 3.5 * Math.tanh((inputs.baseVolume - 25) / 3);
-
-  let colorHex: string;
-  if (pH < 6) colorHex = "#FF6B6B";
-  else if (pH < 7) colorHex = "#FFE66D";
-  else if (pH <= 8) colorHex = "#A8E6CF";
-  else colorHex = "#FF8B94";
-
-  const failure = inputs.baseVolume > 45 ? "OVERSHOOT" : null;
-  return { outputs: { pH, colorHex }, failure };
-}
-
-function computeEnzyme(inputs: EnzymeInputs): {
-  outputs: EnzymeOutputs;
-  failure: string | null;
-} {
-  const Vmax = 10 * Math.exp(-0.01 * Math.pow(inputs.temperature - 37, 2));
-  const reactionRate =
-    (Vmax * inputs.substrateConc) / (2.5 + inputs.substrateConc);
-  const normalizedRate = Vmax === 0 ? 0 : reactionRate / Vmax;
-  const failure = inputs.temperature > 65 ? "DENATURED" : null;
-  return { outputs: { reactionRate, normalizedRate }, failure };
-}
-
-// ─── Default Values ──────────────────────────────────────────────────
-
-const defaultCircuitInputs: CircuitInputs = { voltage: 6, resistance: 10 };
-const defaultTitrationInputs: TitrationInputs = { baseVolume: 0 };
-const defaultEnzymeInputs: EnzymeInputs = { temperature: 37, substrateConc: 5 };
-
-function getFlatInputs(
-  lab: LabType,
-  circuit: CircuitInputs,
-  titration: TitrationInputs,
-  enzyme: EnzymeInputs,
-): Record<string, number> {
-  if (lab === "circuit") return { ...circuit };
-  if (lab === "titration") return { ...titration };
-  return { ...enzyme };
-}
-
-function buildStats(
-  lab: LabType,
-  circuit: { inputs: CircuitInputs; outputs: CircuitOutputs },
-  titration: { inputs: TitrationInputs; outputs: TitrationOutputs },
-  enzyme: { inputs: EnzymeInputs; outputs: EnzymeOutputs },
-) {
-  if (lab === "circuit") {
-    return [
-      {
-        label: "Voltage",
-        value: circuit.inputs.voltage.toFixed(1),
-        unit: "V",
-        trend: "stable" as const,
-      },
-      {
-        label: "Current",
-        value: circuit.outputs.current.toFixed(3),
-        unit: "A",
-        trend:
-          circuit.outputs.current > 0.04
-            ? ("up" as const)
-            : ("stable" as const),
-      },
-      {
-        label: "Power",
-        value: circuit.outputs.power.toFixed(2),
-        unit: "W",
-        trend: "stable" as const,
-      },
-      {
-        label: "Brightness",
-        value: circuit.outputs.brightnessPercent.toFixed(0),
-        unit: "%",
-        trend: "stable" as const,
-      },
-    ];
-  }
-  if (lab === "titration") {
-    return [
-      {
-        label: "Base Vol",
-        value: titration.inputs.baseVolume.toFixed(1),
-        unit: "mL",
-        trend: "stable" as const,
-      },
-      {
-        label: "pH",
-        value: titration.outputs.pH.toFixed(2),
-        unit: "",
-        trend: titration.outputs.pH > 7 ? ("up" as const) : ("down" as const),
-      },
-    ];
-  }
-  return [
-    {
-      label: "Temp",
-      value: enzyme.inputs.temperature.toFixed(0),
-      unit: "°C",
-      trend:
-        enzyme.inputs.temperature > 50 ? ("up" as const) : ("stable" as const),
-    },
-    {
-      label: "Rate",
-      value: enzyme.outputs.reactionRate.toFixed(2),
-      unit: "",
-      trend: "stable" as const,
-    },
-    {
-      label: "Normalized",
-      value: enzyme.outputs.normalizedRate.toFixed(2),
-      unit: "",
-      trend: "stable" as const,
-    },
-  ];
-}
-
-// ─── Store ───────────────────────────────────────────────────────────
 
 export const useLabStore = create<LabState>((set, get) => ({
   activeLab: "circuit",
-  isRunning: false,
-  running: false,
-  failureState: null,
-  mistakeCount: 0,
-  sessionStartTime: null,
-
-  circuit: {
-    inputs: { ...defaultCircuitInputs },
-    outputs: computeCircuit(defaultCircuitInputs).outputs,
-  },
-  titration: {
-    inputs: { ...defaultTitrationInputs },
-    outputs: computeTitration(defaultTitrationInputs).outputs,
-  },
-  enzyme: {
-    inputs: { ...defaultEnzymeInputs },
-    outputs: computeEnzyme(defaultEnzymeInputs).outputs,
-  },
-
-  inputs: { ...defaultCircuitInputs },
-  stats: buildStats(
-    "circuit",
-    {
-      inputs: defaultCircuitInputs,
-      outputs: computeCircuit(defaultCircuitInputs).outputs,
-    },
-    {
-      inputs: defaultTitrationInputs,
-      outputs: computeTitration(defaultTitrationInputs).outputs,
-    },
-    {
-      inputs: defaultEnzymeInputs,
-      outputs: computeEnzyme(defaultEnzymeInputs).outputs,
-    },
-  ),
-
-  // UI State
-  sidebarOpen: true,
-  tutorOpen: false,
-  showSkillRadar: false,
-  score: 0,
-  experimentDuration: 0,
-  language: "en",
-
-  // ── Actions ──────────────────────────────────────────────────────
-
   setActiveLab: (lab) =>
-    set((state) => ({
+    set({
       activeLab: lab,
-      failureState: null,
-      isRunning: false,
+      activeTab: "simulator", // Reset to simulator on lab switch
+      stats: getStatsForLab(lab),
+      inputs: { ...defaultInputs[lab] },
       running: false,
-      mistakeCount: 0,
-      sessionStartTime: null,
-      inputs: getFlatInputs(
-        lab,
-        state.circuit.inputs,
-        state.titration.inputs,
-        state.enzyme.inputs,
-      ),
-      stats: buildStats(lab, state.circuit, state.titration, state.enzyme),
-    })),
-
-  updateInput: (key, value) =>
-    set((state) => {
-      const lab = state.activeLab;
-
-      if (lab === "circuit") {
-        const nextInputs = { ...state.circuit.inputs, [key]: value };
-        const { outputs, failure } = computeCircuit(nextInputs);
-        const isNewFailure = failure !== null && state.failureState === null;
-        const nextCircuit = { inputs: nextInputs, outputs };
-        return {
-          circuit: nextCircuit,
-          failureState: state.failureState ?? failure,
-          mistakeCount: isNewFailure
-            ? state.mistakeCount + 1
-            : state.mistakeCount,
-          inputs: { ...nextInputs },
-          stats: buildStats(lab, nextCircuit, state.titration, state.enzyme),
-        };
-      }
-
-      if (lab === "titration") {
-        const nextInputs = { ...state.titration.inputs, [key]: value };
-        const { outputs, failure } = computeTitration(nextInputs);
-        const isNewFailure = failure !== null && state.failureState === null;
-        const nextTitration = { inputs: nextInputs, outputs };
-        return {
-          titration: nextTitration,
-          failureState: state.failureState ?? failure,
-          mistakeCount: isNewFailure
-            ? state.mistakeCount + 1
-            : state.mistakeCount,
-          inputs: { ...nextInputs },
-          stats: buildStats(lab, state.circuit, nextTitration, state.enzyme),
-        };
-      }
-
-      // enzyme
-      const nextInputs = { ...state.enzyme.inputs, [key]: value };
-      const { outputs, failure } = computeEnzyme(nextInputs);
-      const isNewFailure = failure !== null && state.failureState === null;
-      const nextEnzyme = { inputs: nextInputs, outputs };
-      return {
-        enzyme: nextEnzyme,
-        failureState: state.failureState ?? failure,
-        mistakeCount: isNewFailure
-          ? state.mistakeCount + 1
-          : state.mistakeCount,
-        inputs: { ...nextInputs },
-        stats: buildStats(lab, state.circuit, state.titration, nextEnzyme),
-      };
+      failureState: null,
     }),
 
-  startExperiment: () =>
-    set({ isRunning: true, running: true, sessionStartTime: Date.now() }),
+  activeTab: "simulator",
+  setActiveTab: (tab) => set({ activeTab: tab }),
 
-  stopExperiment: () => {
-    const state = get();
-    const duration = state.sessionStartTime
-      ? Math.floor((Date.now() - state.sessionStartTime) / 1000)
-      : 0;
+  language: "en",
+  setLanguage: (lang) => set({ language: lang }),
+
+  // Inputs
+  inputs: { ...defaultInputs["circuit"] },
+  updateInput: (key, value) =>
+    set((state) => ({
+      inputs: { ...state.inputs, [key]: value },
+    })),
+
+  // Experiment controls
+  running: false,
+  score: 0,
+  mistakeCount: 0,
+  experimentStartTime: null,
+  experimentDuration: 0,
+  showSkillRadar: false,
+  setShowSkillRadar: (show) => set({ showSkillRadar: show }),
+
+  startExperiment: () => {
+    const { inputs, activeLab, mistakeCount } = get();
+    // Check for failure conditions
+    let failure: FailureState | null = null;
+    let newMistakes = mistakeCount;
+
+    if (activeLab === "circuit") {
+      if (inputs.voltage > 20) {
+        failure = {
+          name: "Overvoltage Detected",
+          description: "Voltage exceeds safe operating range (>20V). Components may burn out.",
+        };
+        newMistakes++;
+      } else if (inputs.resistance < 2) {
+        failure = {
+          name: "Short Circuit Risk",
+          description: "Resistance is too low (<2Ω). Excessive current may damage the circuit.",
+        };
+        newMistakes++;
+      }
+    } else if (activeLab === "enzyme") {
+      if (inputs.temperature > 70) {
+        failure = {
+          name: "Enzyme Denaturation",
+          description: "Temperature exceeds 70°C — enzyme structure is destroyed.",
+        };
+        newMistakes++;
+      }
+    }
+
     set({
-      isRunning: false,
-      running: false,
-      experimentDuration: duration,
-      showSkillRadar: true,
-      score: Math.max(0, 100 - state.mistakeCount * 20),
+      running: true,
+      failureState: failure,
+      mistakeCount: newMistakes,
+      experimentStartTime: get().experimentStartTime ?? Date.now(),
     });
   },
 
-  resetExperiment: () =>
-    set((state) => {
-      const base = {
-        failureState: null,
-        mistakeCount: 0,
-        isRunning: false,
-        running: false,
-        sessionStartTime: null,
-        score: 0,
-        experimentDuration: 0,
-        showSkillRadar: false,
-      };
+  stopExperiment: () => {
+    const { experimentStartTime, failureState, inputs, activeLab } = get();
+    const duration = experimentStartTime
+      ? Math.round((Date.now() - experimentStartTime) / 1000)
+      : 0;
 
-      if (state.activeLab === "circuit") {
-        const nextCircuit = {
-          inputs: { ...defaultCircuitInputs },
-          outputs: computeCircuit(defaultCircuitInputs).outputs,
-        };
-        return {
-          ...base,
-          circuit: nextCircuit,
-          inputs: { ...defaultCircuitInputs },
-          stats: buildStats(
-            "circuit",
-            nextCircuit,
-            state.titration,
-            state.enzyme,
-          ),
-        };
-      }
+    // Compute a score based on how close inputs are to optimal values
+    let score = 75; // baseline
+    if (activeLab === "circuit") {
+      // Optimal: voltage 5-12V, resistance 10-100Ω
+      const vScore = inputs.voltage >= 3 && inputs.voltage <= 15 ? 90 : 60;
+      const rScore = inputs.resistance >= 10 && inputs.resistance <= 100 ? 90 : 55;
+      score = Math.round((vScore + rScore) / 2);
+    } else if (activeLab === "titration") {
+      // Optimal: baseVolume near 25mL for equivalence
+      const diff = Math.abs(inputs.baseVolume - 25);
+      score = Math.round(Math.max(40, 100 - diff * 2.5));
+    } else if (activeLab === "enzyme") {
+      // Optimal: temp 35-40°C, substrate 5-10 mmol/L
+      const tScore = inputs.temperature >= 30 && inputs.temperature <= 45 ? 90 : 50;
+      const sScore = inputs.substrateConcentration >= 3 && inputs.substrateConcentration <= 12 ? 90 : 55;
+      score = Math.round((tScore + sScore) / 2);
+    }
+    // Penalize if failure occurred
+    if (failureState) score = Math.max(20, score - 25);
 
-      if (state.activeLab === "titration") {
-        const nextTitration = {
-          inputs: { ...defaultTitrationInputs },
-          outputs: computeTitration(defaultTitrationInputs).outputs,
-        };
-        return {
-          ...base,
-          titration: nextTitration,
-          inputs: { ...defaultTitrationInputs },
-          stats: buildStats(
-            "titration",
-            state.circuit,
-            nextTitration,
-            state.enzyme,
-          ),
-        };
-      }
+    set({
+      running: false,
+      score,
+      experimentDuration: duration,
+      showSkillRadar: true,
+    });
+  },
 
-      const nextEnzyme = {
-        inputs: { ...defaultEnzymeInputs },
-        outputs: computeEnzyme(defaultEnzymeInputs).outputs,
-      };
-      return {
-        ...base,
-        enzyme: nextEnzyme,
-        inputs: { ...defaultEnzymeInputs },
-        stats: buildStats("enzyme", state.circuit, state.titration, nextEnzyme),
-      };
-    }),
+  resetExperiment: () => {
+    const { activeLab } = get();
+    set({
+      inputs: { ...defaultInputs[activeLab] },
+      running: false,
+      failureState: null,
+      score: 0,
+      mistakeCount: 0,
+      experimentStartTime: null,
+      experimentDuration: 0,
+      showSkillRadar: false,
+    });
+  },
 
-  recordMistake: () =>
-    set((state) => ({ mistakeCount: state.mistakeCount + 1 })),
+  // Failure
+  failureState: null,
+  setFailureState: (failure) => set({ failureState: failure }),
 
+  // Chat
+  messages: welcomeMessages,
+  addMessage: (role, text) =>
+    set((state) => ({
+      messages: [
+        ...state.messages,
+        {
+          id: `msg-${Date.now()}-${Math.random().toString(36).slice(2, 7)}`,
+          role,
+          text,
+          timestamp: Date.now(),
+        },
+      ],
+    })),
+  clearMessages: () => set({ messages: welcomeMessages }),
+
+  // Stats
+  stats: circuitStats,
+  setStats: (stats) => set({ stats }),
+
+  // Panels
+  sidebarOpen: true,
   toggleSidebar: () => set((state) => ({ sidebarOpen: !state.sidebarOpen })),
+
+  tutorOpen: true,
   toggleTutor: () => set((state) => ({ tutorOpen: !state.tutorOpen })),
-  setShowSkillRadar: (v) => set({ showSkillRadar: v }),
-  setLanguage: (l) => set({ language: l }),
 }));
