@@ -3,7 +3,7 @@ import { create } from "zustand";
 export type LabType =
   | "ohm-law" | "projectile-motion" | "optics-bench" | "logic-gates"
   | "titration" | "flame-test" | "periodic-table" | "reaction-rate"
-  | "microscope" | "cell-structure" | "mitosis" | "anatomy";
+  | "mitosis";
 
 export type Language = "en" | "hi" | "ta";
 
@@ -111,10 +111,7 @@ const defaultInputs: Record<LabType, LabInputs> = {
   "flame-test": { elementIdx: 0 },
   "periodic-table": { elementIdx: 1 },
   "reaction-rate": { temperature: 25, concentration: 1 },
-  "microscope": { magnification: 10 },
-  "cell-structure": { zoom: 1 },
   "mitosis": { stage: 0 },
-  "anatomy": { rotate: 0 },
 };
 
 const genericStats: StatReading[] = [
@@ -164,8 +161,8 @@ interface LabState {
   toggleSidebar: () => void;
   tutorOpen: boolean;
   toggleTutor: () => void;
-  activeTab: "theory" | "procedure" | "simulator" | "resources";
-  setActiveTab: (tab: "theory" | "procedure" | "simulator" | "resources") => void;
+  activeTab: "theory" | "procedure" | "simulator";
+  setActiveTab: (tab: "theory" | "procedure" | "simulator") => void;
   prediction: number | null;
   predictionSkipped: boolean;
   predictionActual: number | null;
@@ -249,13 +246,15 @@ export const useLabStore = create<LabState>((set, get) => ({
     const config = predictionConfigs[activeLab];
     const actualVal = config ? config.computeActual(inputs) : null;
 
-    const showReport = duration >= 30 && !challengeActive;
+    const excludedReportLabs: LabType[] = ["logic-gates", "periodic-table", "mitosis", "flame-test"];
+    const isExcluded = excludedReportLabs.includes(activeLab);
+    const showReport = duration >= 30 && !challengeActive && !isExcluded;
 
     set({
       running: false,
       score: 85,
       experimentDuration: duration,
-      showSkillRadar: prediction === null && !showReport,
+      showSkillRadar: prediction === null && !showReport && !isExcluded,
       predictionActual: actualVal,
       showPredictionResult: prediction !== null && actualVal !== null,
       showLabReport: showReport,
@@ -277,6 +276,8 @@ export const useLabStore = create<LabState>((set, get) => ({
       predictionSkipped: false,
       predictionActual: null,
       showPredictionResult: false,
+      observations: [],
+      failureHistory: [],
     });
   },
 
