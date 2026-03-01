@@ -1,6 +1,6 @@
 import { create } from "zustand";
 
-export type LabType = "circuit" | "titration" | "enzyme";
+export type LabType = "circuit" | "titration" | "enzyme" | "pendulum" | "gravity";
 export type Language = "en" | "hi" | "ta";
 
 interface ChatMessage {
@@ -32,6 +32,8 @@ const defaultInputs: Record<LabType, LabInputs> = {
   circuit: { voltage: 5, resistance: 20 },
   titration: { baseVolume: 0 },
   enzyme: { temperature: 37, substrateConcentration: 5 },
+  pendulum: { length: 2.0, gravity: 9.8, angle: 45 },
+  gravity: { planetMass: 100, objectDistance: 50 },
 };
 
 /* ─── Stats per lab ─── */
@@ -56,14 +58,28 @@ const enzymeStats: StatReading[] = [
   { label: "Rate", value: "0.42", unit: "μM/s", icon: "📈", trend: "up" },
 ];
 
+const pendulumStats: StatReading[] = [
+  { label: "Period", value: "2.84", unit: "s", icon: "⏱️", trend: "stable" },
+  { label: "Frequency", value: "0.35", unit: "Hz", icon: "🔄", trend: "stable" },
+  { label: "Velocity", value: "0.00", unit: "m/s", icon: "💨", trend: "stable" },
+  { label: "Potential E", value: "4.5", unit: "J", icon: "🔋", trend: "down" },
+];
+
+const gravityStats: StatReading[] = [
+  { label: "Force", value: "98.1", unit: "N", icon: "💥", trend: "stable" },
+  { label: "Accel", value: "9.81", unit: "m/s²", icon: "🚀", trend: "stable" },
+  { label: "Orbit Vel", value: "7.9", unit: "km/s", icon: "🌍", trend: "up" },
+  { label: "Energy", value: "1240", unit: "kJ", icon: "✨", trend: "stable" },
+];
+
 const getStatsForLab = (lab: LabType): StatReading[] => {
   switch (lab) {
-    case "circuit":
-      return circuitStats;
-    case "titration":
-      return titrationStats;
-    case "enzyme":
-      return enzymeStats;
+    case "circuit": return circuitStats;
+    case "titration": return titrationStats;
+    case "enzyme": return enzymeStats;
+    case "pendulum": return pendulumStats;
+    case "gravity": return gravityStats;
+    default: return circuitStats;
   }
 };
 
@@ -125,6 +141,10 @@ interface LabState {
   // Tutor panel
   tutorOpen: boolean;
   toggleTutor: () => void;
+
+  // OLabs Tabs
+  activeTab: "theory" | "procedure" | "simulator" | "resources";
+  setActiveTab: (tab: "theory" | "procedure" | "simulator" | "resources") => void;
 }
 
 export const useLabStore = create<LabState>((set, get) => ({
@@ -132,11 +152,15 @@ export const useLabStore = create<LabState>((set, get) => ({
   setActiveLab: (lab) =>
     set({
       activeLab: lab,
+      activeTab: "simulator", // Reset to simulator on lab switch
       stats: getStatsForLab(lab),
       inputs: { ...defaultInputs[lab] },
       running: false,
       failureState: null,
     }),
+
+  activeTab: "simulator",
+  setActiveTab: (tab) => set({ activeTab: tab }),
 
   language: "en",
   setLanguage: (lang) => set({ language: lang }),
