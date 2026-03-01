@@ -88,3 +88,33 @@ export const Home: React.FC = () => {
                                 </div>
                                 <div>
                                     <div className="flex items-center gap-1.5 mb-0.5">
+                                        <h3 className="font-black bg-gradient-to-r from-orange-400 to-amber-300 bg-clip-text text-transparent text-sm tracking-wide">VirtuLab AI</h3>
+                                        <svg className="w-3.5 h-3.5 text-orange-400" viewBox="0 0 24 24" fill="currentColor"><path d="M12 2C6.5 2 2 6.5 2 12s4.5 10 10 10 10-4.5 10-10S17.5 2 12 2zm-2 15l-5-5 1.41-1.41L10 14.17l7.59-7.59L19 8l-9 9z" /></svg>
+                                    </div>
+                                    <p className="text-white/50 text-[11px] font-medium flex items-center gap-1">
+                                        <span className="w-1 h-1 rounded-full bg-orange-500 animate-pulse"></span>
+                                        Ready to help
+                                    </p>
+                                </div>
+                            </div>
+                            <button onClick={() => setIsChatOpen(false)} className="text-white/50 hover:text-white transition-colors p-1 rounded-lg hover:bg-white/10">
+                                <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                                </svg>
+                            </button>
+                        </div>
+                        <div className="p-4 h-64 overflow-y-auto flex flex-col gap-3 relative">
+                            {/* Inner ambient glow */}
+                            <div className="absolute top-0 right-0 w-32 h-32 bg-orange-500/10 rounded-full blur-3xl pointer-events-none" />
+
+                            <div className="bg-white/5 border border-white/5 p-3 rounded-xl rounded-tl-none w-[85%] relative z-10 backdrop-blur-sm shadow-md">
+                                <p className="text-sm text-white/90 leading-relaxed">Hello! I'm your interactive AI tutor. <br /><br />Click on simulations to start playing, or ask me any doubts about your experiments right here!</p>
+                            </div>
+                        </div>
+                        <div className="p-3 border-t border-white/5 bg-black/20 relative z-10 backdrop-blur-md">
+                            <div className="relative flex items-center">
+                                <input type="text" placeholder="Type your doubt here..." className="w-full bg-white/5 border border-white/10 rounded-full pl-4 pr-12 py-2.5 text-sm text-white placeholder-white/30 focus:outline-none focus:border-orange-500/50 focus:bg-white/10 transition-all shadow-inner" />
+                                <button className="absolute right-1 top-1/2 -translate-y-1/2 p-2 text-orange-400 hover:text-white bg-orange-500/20 hover:bg-orange-500 transition-colors rounded-full">
+                                    <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M12 19l9 2-9-18-9 18 9-2zm0 0v-8" /></svg>
+                                </button>
+                            </div>
