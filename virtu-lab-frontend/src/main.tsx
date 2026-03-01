@@ -5,7 +5,6 @@ import App from './App.tsx'
 import './index.css'
 import { registerSW } from 'virtual:pwa-register'
 
-// Register Service Worker for Offline PWA Support
 registerSW({ immediate: true })
 
 ReactDOM.createRoot(document.getElementById('root')!).render(

@@ -5,7 +5,7 @@ import { SimulationEngine } from './components/simulations/SimulationEngine'
 import { ControlsSidebar } from './components/ui/ControlsSidebar'
 import { AITutorPanel } from './components/ui/AITutorPanel'
 import { TeacherDashboard } from './pages/TeacherDashboard'
-import { Home } from './pages/Home'
+import Home from './pages/Home'
 import { useLabStore } from './store/useLabStore'
 
 function MainLab() {
@@ -26,7 +26,6 @@ function MainLab() {
     >
       <SimulationEngine />
 
-      {/* Floating failure notification */}
       {failureState && (
         <div
           className="fixed top-20 right-96 z-50 flex items-center gap-2
@@ -34,7 +33,7 @@ function MainLab() {
                      rounded-xl shadow-lg shadow-red-500/20 animate-bounce
                      border border-red-500/30"
         >
-          <span className="text-lg">⚠️</span>
+          <img src="/icon_warning.png" alt="Warning" className="w-5 h-5 object-contain" />
           <span className="text-sm font-medium">{failureState.name}</span>
         </div>
       )}

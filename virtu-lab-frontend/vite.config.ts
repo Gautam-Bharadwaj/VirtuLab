@@ -6,6 +6,7 @@ export default defineConfig({
   plugins: [
     react(),
     VitePWA({
+      strategies: 'generateSW',
       registerType: "autoUpdate",
       injectRegister: 'auto',
       workbox: {

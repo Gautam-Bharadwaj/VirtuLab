@@ -7,7 +7,6 @@ interface Props {
 export const VisionUploader: React.FC<Props> = ({ onClose }) => {
   return (
     <div onClick={onClose} role="dialog">
-      {/* VisionUploader stub */}
     </div>
   );
 };

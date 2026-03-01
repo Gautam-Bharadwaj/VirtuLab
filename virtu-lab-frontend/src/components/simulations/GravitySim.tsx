@@ -39,7 +39,6 @@ export const GravitySim: React.FC = () => {
             </div>
 
             <div className="relative">
-                {/* Central Planet */}
                 <div
                     className="w-16 h-16 bg-gradient-to-br from-rose-500 to-red-900 rounded-full shadow-[0_0_60px_rgba(244,63,94,0.4)] z-10 relative flex items-center justify-center"
                     style={{ transform: `scale(${1 + mass / 200})` }}
@@ -47,7 +46,6 @@ export const GravitySim: React.FC = () => {
                     <div className="absolute inset-0 bg-[url('https://www.transparenttextures.com/patterns/asfalt-dark.png')] opacity-30 rounded-full" />
                 </div>
 
-                {/* Orbit Path Trail */}
                 <svg className="absolute inset-0 w-[800px] h-[800px] -translate-x-1/2 -translate-y-1/2 pointer-events-none">
                     <polyline
                         points={orbits.map(p => `${400 + p.x},${400 + p.y}`).join(' ')}
@@ -58,7 +56,6 @@ export const GravitySim: React.FC = () => {
                     />
                 </svg>
 
-                {/* Orbiting Object */}
                 <motion.div
                     className="absolute w-4 h-4 bg-white rounded-full shadow-[0_0_15px_white] z-20"
                     style={{
@@ -68,7 +65,6 @@ export const GravitySim: React.FC = () => {
                 />
             </div>
 
-            {/* Stellar Background */}
             <div className="absolute inset-0 pointer-events-none opacity-20">
                 {Array.from({ length: 50 }).map((_, i) => (
                     <div

@@ -9,7 +9,6 @@ export function useVisionToSim() {
     setIsLoading(true);
     setError(null);
     try {
-      // Stub — will be wired to vision API
       console.log("Analyze method stub for", file.name);
       setResult({ status: "stub" });
     } catch (e) {

@@ -7,7 +7,6 @@ export const PendulumSim: React.FC = () => {
     const [angle, setAngle] = useState(0);
     const [time, setTime] = useState(0);
 
-    // Default values or from inputs
     const length = inputs.length || 2;
     const gravity = inputs.gravity || 9.8;
     const initialAngle = inputs.angle || 45;
@@ -16,13 +15,9 @@ export const PendulumSim: React.FC = () => {
         let interval: any;
         if (running) {
             const startTime = Date.now();
-
-
             interval = setInterval(() => {
                 const elapsed = (Date.now() - startTime) / 1000;
                 setTime(elapsed);
-                // Harmonic motion formula: θ(t) = θ0 * cos(ωt)
-                // ω = √(g/L)
                 const omega = Math.sqrt(gravity / length);
                 const newAngle = initialAngle * Math.cos(omega * elapsed);
                 setAngle(newAngle);
@@ -43,10 +38,8 @@ export const PendulumSim: React.FC = () => {
             </div>
 
             <div className="relative flex flex-col items-center">
-                {/* Support */}
                 <div className="w-32 h-3 bg-zinc-800 border border-zinc-700 rounded-full z-10" />
 
-                {/* Pendulum Arm */}
                 <motion.div
                     style={{
                         transformOrigin: 'top center',
@@ -64,7 +57,6 @@ export const PendulumSim: React.FC = () => {
                 </motion.div>
             </div>
 
-            {/* Grid Overlay for measurement */}
             <div className="absolute inset-0 pointer-events-none opacity-5"
                 style={{
                     backgroundImage: 'linear-gradient(#fff 1px, transparent 1px), linear-gradient(90deg, #fff 1px, transparent 1px)',
@@ -72,7 +64,6 @@ export const PendulumSim: React.FC = () => {
                 }}
             />
 
-            {/* Stopwatch indicator */}
             {running && (
                 <div className="absolute bottom-10 right-10 glass-panel p-4 border-orange-500/30 rounded-2xl bg-orange-500/5">
                     <div className="text-[10px] uppercase font-bold text-orange-400 mb-1">Electronic Timer</div>
