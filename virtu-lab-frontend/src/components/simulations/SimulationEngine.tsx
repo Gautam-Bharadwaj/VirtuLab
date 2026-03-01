@@ -133,3 +133,30 @@ function CircuitAnimation() {
             r="3"
             fill="#FBBF24"
             initial={{ offsetDistance: '0%' }}
+            animate={{ offsetDistance: '100%' }}
+            transition={{ duration: 3, delay: i * 0.6, repeat: Infinity, ease: 'linear' }}
+            style={{ offsetPath: "path('M 50 150 L 120 150 L 120 80 L 280 80 L 280 150 L 350 150')" }}
+          />
+        ))}
+        {/* Resistor symbols */}
+        <motion.rect x="170" y="68" width="60" height="24" rx="4" fill="none" stroke="#F59E0B" strokeWidth="1.5"
+          animate={{ opacity: [0.3, 0.8, 0.3] }}
+          transition={{ duration: 2, repeat: Infinity }}
+        />
+        <motion.rect x="170" y="208" width="60" height="24" rx="4" fill="none" stroke="#F59E0B" strokeWidth="1.5"
+          animate={{ opacity: [0.3, 0.8, 0.3] }}
+          transition={{ duration: 2, delay: 0.5, repeat: Infinity }}
+        />
+        {/* Battery */}
+        <line x1="50" y1="130" x2="50" y2="170" stroke="#F59E0B" strokeWidth="3" />
+        <line x1="40" y1="140" x2="40" y2="160" stroke="#F59E0B" strokeWidth="1.5" />
+      </svg>
+    </div>
+  );
+}
+
+function TitrationAnimation() {
+  return (
+    <div className="absolute inset-0 flex items-center justify-center overflow-hidden opacity-20">
+      <svg className="w-full h-full" viewBox="0 0 400 300">
+        {/* Burette */}
