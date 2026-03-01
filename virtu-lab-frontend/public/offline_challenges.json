@@ -1,0 +1,132 @@
+{
+  "circuit": [
+    {
+      "description": "Find the resistance that gives exactly 0.03A at 6V",
+      "metric": "current",
+      "targetValue": 0.03,
+      "tolerance": 0.005,
+      "fixedInputs": { "voltage": 6 },
+      "proof": "I = V/R → R = V/I = 6/0.03 = 200Ω. So resistance must be 200Ω."
+    },
+    {
+      "description": "Make power dissipation less than 0.5W with voltage at 12V",
+      "metric": "power",
+      "targetValue": 0.4,
+      "tolerance": 0.1,
+      "fixedInputs": { "voltage": 12 },
+      "proof": "P = V²/R. For P < 0.5W: R > 12²/0.5 = 288Ω. Use R ≥ 290Ω."
+    },
+    {
+      "description": "Set brightness to exactly 50% using only resistance",
+      "metric": "brightness",
+      "targetValue": 50,
+      "tolerance": 5,
+      "fixedInputs": { "voltage": 5 },
+      "proof": "50% brightness needs I = 0.025A. R = V/I = 5/0.025 = 200Ω."
+    }
+  ],
+  "titration": [
+    {
+      "description": "Stop at exactly pH 7.0 (neutralization point)",
+      "metric": "pH",
+      "targetValue": 7.0,
+      "tolerance": 0.3,
+      "fixedInputs": {},
+      "proof": "pH = 7.0 occurs at the equivalence point, when baseVolume ≈ 25mL."
+    },
+    {
+      "description": "Reach pH 4.5 without overshooting past pH 5.0",
+      "metric": "pH",
+      "targetValue": 4.5,
+      "tolerance": 0.5,
+      "fixedInputs": {},
+      "proof": "pH 4.5 occurs around 15mL base. The sigmoid curve is gentle here — precise control is easier."
+    },
+    {
+      "description": "Find the volume where pH changes fastest",
+      "metric": "baseVolume",
+      "targetValue": 25,
+      "tolerance": 2,
+      "fixedInputs": {},
+      "proof": "The steepest part of the titration curve is at the equivalence point: 25mL, where dpH/dV is maximum."
+    }
+  ],
+  "enzyme": [
+    {
+      "description": "Find the temperature that gives maximum reaction rate",
+      "metric": "temperature",
+      "targetValue": 37,
+      "tolerance": 3,
+      "fixedInputs": { "substrateConcentration": 10 },
+      "proof": "Enzyme activity peaks at 37°C (body temperature). The Gaussian curve Vmax = 10·exp(-0.01·(T-37)²) peaks at T=37."
+    },
+    {
+      "description": "Achieve reaction rate of exactly 5.0 μM/s",
+      "metric": "reactionRate",
+      "targetValue": 5.0,
+      "tolerance": 0.5,
+      "fixedInputs": { "temperature": 37 },
+      "proof": "At 37°C, Vmax=10. Rate = 10·[S]/(2.5+[S]) = 5 → [S] = 2.5 mmol/L."
+    },
+    {
+      "description": "Find the substrate concentration where rate is exactly half of Vmax",
+      "metric": "substrateConcentration",
+      "targetValue": 2.5,
+      "tolerance": 0.5,
+      "fixedInputs": { "temperature": 37 },
+      "proof": "Half-Vmax occurs at [S] = Km = 2.5 mmol/L. This is the Michaelis constant."
+    }
+  ],
+  "pendulum": [
+    {
+      "description": "Set up the pendulum to have a period of exactly 2 seconds",
+      "metric": "period",
+      "targetValue": 2.0,
+      "tolerance": 0.1,
+      "fixedInputs": { "gravity": 9.8, "angle": 15 },
+      "proof": "T = 2π√(L/g) = 2 → L = g·(T/2π)² = 9.8·(2/6.28)² ≈ 0.99m. Use L ≈ 1.0m."
+    },
+    {
+      "description": "Make the pendulum complete 10 swings in 14 seconds",
+      "metric": "period",
+      "targetValue": 1.4,
+      "tolerance": 0.1,
+      "fixedInputs": { "gravity": 9.8, "angle": 10 },
+      "proof": "Period = 14/10 = 1.4s. T = 2π√(L/g) → L = g·(T/2π)² = 9.8·(1.4/6.28)² ≈ 0.49m."
+    },
+    {
+      "description": "Find the gravity value that gives a period of 3 seconds with L=2m",
+      "metric": "gravity",
+      "targetValue": 8.77,
+      "tolerance": 0.5,
+      "fixedInputs": { "length": 2.0, "angle": 10 },
+      "proof": "T = 2π√(L/g) = 3 → g = L·(2π/T)² = 2·(6.28/3)² ≈ 8.77 m/s²."
+    }
+  ],
+  "gravity": [
+    {
+      "description": "Find the distance where gravitational force equals 50N",
+      "metric": "force",
+      "targetValue": 50,
+      "tolerance": 5,
+      "fixedInputs": { "planetMass": 100 },
+      "proof": "F = G·M₁·M₂/r². Adjust distance until the force reading shows ~50N."
+    },
+    {
+      "description": "Double the gravitational force by changing only planet mass",
+      "metric": "force",
+      "targetValue": 196,
+      "tolerance": 10,
+      "fixedInputs": { "objectDistance": 50 },
+      "proof": "F ∝ M. If initial F = 98N at M=100Me, then F = 196N at M=200Me."
+    },
+    {
+      "description": "Find the distance where orbital velocity equals 5 km/s",
+      "metric": "orbitalVelocity",
+      "targetValue": 5.0,
+      "tolerance": 0.5,
+      "fixedInputs": { "planetMass": 100 },
+      "proof": "v = √(GM/r). Adjust distance until orbital velocity shows ~5 km/s."
+    }
+  ]
+}

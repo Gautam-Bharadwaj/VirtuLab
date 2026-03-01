@@ -156,11 +156,22 @@ export const ControlsSidebar: React.FC = () => {
     resetExperiment,
     failureState,
     sidebarOpen,
+    predictionPhase,
+    setPredictionPhase,
   } = useLabStore();
 
   const fileInputRef = useRef<HTMLInputElement>(null);
   const sliders = sliderDefs[activeLab];
   const meta = labMeta[activeLab];
+
+  // Start button now triggers prediction phase first
+  const handleStart = () => {
+    if (predictionPhase === 'idle') {
+      setPredictionPhase('predict');
+    } else {
+      startExperiment();
+    }
+  };
 
   if (!sidebarOpen) return null;
 
@@ -260,7 +271,7 @@ export const ControlsSidebar: React.FC = () => {
           <motion.button
             id="start-experiment"
             whileTap={{ scale: 0.97 }}
-            onClick={startExperiment}
+            onClick={handleStart}
             className="w-full py-3 rounded-xl bg-gradient-to-r from-emerald-600 to-green-600 text-white font-semibold text-sm shadow-lg shadow-emerald-500/15 hover:shadow-emerald-500/30 transition-all flex items-center justify-center gap-2 group"
           >
             <svg className="w-4 h-4 group-hover:scale-110 transition-transform" fill="none" viewBox="0 0 24 24" stroke="currentColor">

@@ -1,0 +1,23 @@
+
+> virtu-lab-frontend@0.0.0 dev
+> vite
+
+
+  VITE v5.4.21  ready in 211 ms
+
+  ➜  Local:   http://localhost:5173/
+  ➜  Network: use --host to expose
+6:45:35 AM [vite] hmr update /src/App.tsx, /src/index.css, /src/components/ui/LabShell.tsx, /src/components/ui/AITutorPanel.tsx, /src/components/simulations/SimulationEngine.tsx, /src/components/ui/ControlsSidebar.tsx, /src/components/ui/Navbar.tsx, /src/components/ui/BottomBar.tsx
+6:51:35 AM [vite] hmr update /src/components/ui/AITutorPanel.tsx, /src/index.css
+6:52:56 AM [vite] hmr update /src/App.tsx, /src/index.css
+6:52:57 AM [vite] ✨ new dependencies optimized: zustand/middleware
+6:52:57 AM [vite] ✨ optimized dependencies changed. reloading
+6:53:36 AM [vite] hmr update /src/components/ui/LabShell.tsx, /src/index.css
+6:53:55 AM [vite] hmr update /src/components/ui/ControlsSidebar.tsx, /src/index.css
+6:54:07 AM [vite] hmr update /src/components/ui/ControlsSidebar.tsx, /src/index.css
+6:54:30 AM [vite] hmr update /src/components/ui/AITutorPanel.tsx, /src/index.css
+6:54:35 AM [vite] hmr update /src/components/ui/LabShell.tsx, /src/index.css
+6:54:36 AM [vite] hmr update /src/pages/StudentDashboard.tsx, /src/index.css
+6:54:57 AM [vite] hmr update /src/components/ui/Navbar.tsx, /src/index.css
+6:55:31 AM [vite] hmr update /src/components/features/ChallengePanel.tsx, /src/index.css
+6:55:33 AM [vite] hmr update /src/components/features/PredictionCard.tsx, /src/index.css

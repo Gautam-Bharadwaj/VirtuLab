@@ -37,6 +37,22 @@ export const Navbar: React.FC = () => {
                 </span>
             </a>
 
+            {/* Nav Links */}
+            <div className="flex items-center gap-1">
+                <a
+                    href="/dashboard"
+                    className="px-3 py-1.5 rounded-lg text-xs font-medium text-white/50 hover:text-white/90 hover:bg-white/[0.05] transition-all"
+                >
+                    📊 Dashboard
+                </a>
+                <a
+                    href="/teacher"
+                    className="px-3 py-1.5 rounded-lg text-xs font-medium text-white/50 hover:text-white/90 hover:bg-white/[0.05] transition-all"
+                >
+                    👩‍🏫 Teacher
+                </a>
+            </div>
+
             {/* Language Selector */}
             <div className="relative shrink-0" ref={dropdownRef}>
                 <button

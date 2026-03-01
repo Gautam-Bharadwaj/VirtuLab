@@ -5,6 +5,7 @@ import { SimulationEngine } from './components/simulations/SimulationEngine'
 import { ControlsSidebar } from './components/ui/ControlsSidebar'
 import { AITutorPanel } from './components/ui/AITutorPanel'
 import { TeacherDashboard } from './pages/TeacherDashboard'
+import { StudentDashboard } from './pages/StudentDashboard'
 import { Navigate } from 'react-router-dom'
 import { useLabStore } from './store/useLabStore'
 
@@ -48,6 +49,7 @@ export default function App() {
       <Route path="/" element={<Navigate to="/lab/circuit" replace />} />
       <Route path="/lab/:labId" element={<MainLab />} />
       <Route path="/teacher" element={<TeacherDashboard />} />
+      <Route path="/dashboard" element={<StudentDashboard />} />
     </Routes>
   )
 }

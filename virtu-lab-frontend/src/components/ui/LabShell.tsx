@@ -1,9 +1,13 @@
-import React, { ReactNode } from 'react';
+import React, { ReactNode, useEffect } from 'react';
 import { useLabStore } from '../../store/useLabStore';
 import { Navbar } from './Navbar';
 import { BottomBar } from './BottomBar';
 import SkillRadar from './SkillRadar';
-import { motion } from 'framer-motion';
+import { motion, AnimatePresence } from 'framer-motion';
+import { PredictionCard } from '../features/PredictionCard';
+import { PredictionComparison } from '../features/PredictionComparison';
+import { LabReportModal } from '../features/LabReportModal';
+import { ChallengePanel } from '../features/ChallengePanel';
 
 interface LabShellProps {
   children: ReactNode;
@@ -23,14 +27,40 @@ export const LabShell: React.FC<LabShellProps> = ({ children, sidebar, tutor }) 
     mistakeCount,
     experimentDuration,
     failureState,
+    predictionPhase,
+    running,
+    addObservation,
   } = useLabStore();
+
+  // Record observations every 5 seconds while experiment is running
+  useEffect(() => {
+    if (!running) return;
+    const interval = setInterval(() => {
+      const state = useLabStore.getState();
+      const obs: Record<string, number> = { ...state.inputs };
+      // Compute derived values
+      if (state.activeLab === 'circuit') {
+        obs.current = (state.inputs.voltage ?? 5) / (state.inputs.resistance ?? 20);
+        obs.power = obs.current * obs.current * (state.inputs.resistance ?? 20);
+      } else if (state.activeLab === 'titration') {
+        obs.pH = 7 + 3.5 * Math.tanh(((state.inputs.baseVolume ?? 0) - 25) / 3);
+      } else if (state.activeLab === 'enzyme') {
+        const Vmax = 10 * Math.exp(-0.01 * Math.pow((state.inputs.temperature ?? 37) - 37, 2));
+        obs.reactionRate = (Vmax * (state.inputs.substrateConcentration ?? 5)) / (2.5 + (state.inputs.substrateConcentration ?? 5));
+      } else if (state.activeLab === 'pendulum') {
+        obs.period = 2 * Math.PI * Math.sqrt((state.inputs.length ?? 2) / (state.inputs.gravity ?? 9.8));
+      }
+      addObservation(obs);
+    }, 5000);
+    return () => clearInterval(interval);
+  }, [running, addObservation]);
 
   return (
     <div className="h-screen w-screen flex flex-col bg-[#0a0a1a] overflow-hidden">
       {/* Top Navbar */}
       <Navbar />
 
-      {/* Main Content Area — forced horizontal flex */}
+      {/* Main Content Area */}
       <div className="flex-1 flex flex-row overflow-hidden relative min-h-0">
         {/* Sidebar Toggle (when collapsed) */}
         {!sidebarOpen && (
@@ -47,13 +77,12 @@ export const LabShell: React.FC<LabShellProps> = ({ children, sidebar, tutor }) 
           </motion.button>
         )}
 
-        {/* Left Sidebar — fixed width, no shrink */}
+        {/* Left Sidebar */}
         {sidebarOpen && (
           <div
             id="controls-sidebar"
             className="relative flex-shrink-0 w-[340px] border-r border-white/[0.04] overflow-y-auto overflow-x-hidden"
           >
-            {/* Collapse button */}
             <button
               id="collapse-sidebar"
               onClick={toggleSidebar}
@@ -68,7 +97,7 @@ export const LabShell: React.FC<LabShellProps> = ({ children, sidebar, tutor }) 
           </div>
         )}
 
-        {/* Center: Simulation Canvas — takes remaining space */}
+        {/* Center: Simulation Canvas */}
         <main
           id="simulation-container"
           className={`flex-1 min-w-0 p-4 pb-24 overflow-hidden h-full flex flex-col transition-[margin] duration-300 ${tutorOpen ? 'mr-[320px]' : 'mr-0'}`}
@@ -94,10 +123,16 @@ export const LabShell: React.FC<LabShellProps> = ({ children, sidebar, tutor }) 
 
           <div className="flex-1 min-h-0 relative">
             {children}
+
+            {/* ── Feature Overlays ── */}
+            <AnimatePresence>
+              {predictionPhase === 'predict' && <PredictionCard />}
+              {predictionPhase === 'comparison' && <PredictionComparison />}
+            </AnimatePresence>
           </div>
         </main>
 
-        {/* Right: AI Tutor Panel (positioned fixed inside the aside component) */}
+        {/* Right: AI Tutor Panel */}
         {tutor}
 
         {/* Tutor Toggle (when collapsed) */}
@@ -124,7 +159,7 @@ export const LabShell: React.FC<LabShellProps> = ({ children, sidebar, tutor }) 
         <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[600px] h-[600px] bg-blue-500/[0.02] rounded-full blur-[120px]" />
       </div>
 
-      {/* Skill Radar Modal — appears when experiment is stopped */}
+      {/* Skill Radar Modal */}
       <SkillRadar
         score={score}
         mistakeCount={mistakeCount}
@@ -133,6 +168,14 @@ export const LabShell: React.FC<LabShellProps> = ({ children, sidebar, tutor }) 
         isOpen={showSkillRadar}
         onClose={() => setShowSkillRadar(false)}
       />
+
+      {/* Lab Report Modal */}
+      <LabReportModal />
+
+      {/* Challenge Panel */}
+      <AnimatePresence>
+        {predictionPhase === 'challenge' && <ChallengePanel />}
+      </AnimatePresence>
     </div>
   );
 };

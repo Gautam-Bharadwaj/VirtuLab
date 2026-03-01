@@ -1,33 +1,86 @@
 {
-    "overvoltage": [
-        "💡 Tip: Most real-world circuits operate under 12V. Going above 20V can damage components like LEDs and ICs.",
-        "⚡ Remember Ohm's Law: V = IR. If voltage is too high and resistance is low, current spikes dangerously!",
-        "🔌 Industrial circuits use voltage regulators to prevent overvoltage — try keeping it under 20V.",
-        "🔥 Overvoltage can cause thermal runaway in semiconductors. Think about what happens to a light bulb with too much power!"
+  "overvoltage": {
+    "level1": [
+      "🤔 What happens to current when you increase voltage with the same resistance?",
+      "Think about Ohm's Law — how does voltage relate to current?"
     ],
-    "short_circuit": [
-        "🔧 A short circuit occurs when resistance approaches zero — infinite current can flow, causing fires!",
-        "⚠️ Always ensure your circuit has sufficient resistance. Even a small resistor (10Ω) can prevent a short.",
-        "💡 Fuses and circuit breakers exist specifically to protect against short circuits.",
-        "🔬 In the real lab, a short circuit would trip the breaker instantly. Notice how current → ∞ as R → 0."
+    "level2": [
+      "⚡ Your current reading is quite high. The safe limit for this circuit is 0.05A. What's your current reading?",
+      "Look at the bottom bar — your power is climbing. Most components handle ≤1W safely."
     ],
-    "enzyme_denaturation": [
-        "🌡️ Enzymes are proteins — above ~70°C, their 3D structure unfolds (denatures) and they stop working.",
-        "🧬 Think of it like cooking an egg: once the protein changes shape, it can't go back!",
-        "📈 The optimal temperature for most human enzymes is 37°C (body temperature). Try that value!",
-        "🔬 Denaturation is irreversible — in a real lab, you'd need fresh enzyme to continue the experiment."
-    ],
-    "ph_extreme": [
-        "🧪 Extreme pH values (below 2 or above 12) can denature enzymes just like high temperatures.",
-        "⚗️ Most biological enzymes work best between pH 6–8. Pepsin is a rare exception (pH 2).",
-        "💧 pH is logarithmic — pH 3 is 10x more acidic than pH 4!",
-        "🔬 In titration, watch for the equivalence point where the pH changes most rapidly."
-    ],
-    "general": [
-        "🔍 Not sure what went wrong? Try resetting to default values and adjusting one parameter at a time.",
-        "📊 Science is about controlled experiments — change ONE variable and observe the effect.",
-        "🧪 Every experiment teaches something, even when things go wrong! What did you learn?",
-        "💡 Ask me a question in the chat if you're stuck — I'm here to help you learn!",
-        "📝 Good scientists take notes. What readings do you see in the bottom stat bar?"
+    "level3": [
+      "📐 Ohm's Law: I = V/R. At your settings, I = {voltage}/{resistance} = {current}A. The maximum safe current is 0.05A.",
+      "The answer: reduce voltage below 12V or increase resistance above 250Ω to stay within safe limits."
     ]
+  },
+  "short_circuit": {
+    "level1": [
+      "🔧 What happens when resistance approaches zero?",
+      "If there's almost no resistance, where does all the energy go?"
+    ],
+    "level2": [
+      "⚠️ Your resistance is under 2Ω. Real circuits use fuses to prevent this — what would a fuse do right now?",
+      "At {resistance}Ω with {voltage}V, how much current is flowing? Is that safe?"
+    ],
+    "level3": [
+      "A short circuit means R ≈ 0, so I = V/R → ∞. At your values: {voltage}V ÷ {resistance}Ω = extremely high current. Add at least 10Ω of resistance.",
+      "The fix: increase resistance to at least 10Ω. In real labs, a fuse or breaker would trip instantly."
+    ]
+  },
+  "enzyme_denaturation": {
+    "level1": [
+      "🌡️ Enzymes are proteins. What happens to protein structure at very high temperatures?",
+      "Think about cooking an egg — is that reversible?"
+    ],
+    "level2": [
+      "Your temperature is {temperature}°C. Most human enzymes work best at 37°C. What happens to the 3D shape above 60°C?",
+      "The reaction rate is dropping even though temperature is rising. Why might that be?"
+    ],
+    "level3": [
+      "At {temperature}°C, hydrogen bonds in the enzyme break, destroying its active site shape. This is denaturation and it's irreversible. Stay under 60°C.",
+      "Optimal temperature: 37°C (body temperature). Above 65°C, the enzyme is permanently destroyed."
+    ]
+  },
+  "ph_extreme": {
+    "level1": [
+      "🧪 What happens when you add too much base past the equivalence point?",
+      "pH is a logarithmic scale — what does each unit change actually mean?"
+    ],
+    "level2": [
+      "You've added {baseVolume}mL. The equivalence point is around 25mL. What happens to pH when you go way past it?",
+      "Look at how steep the pH curve is near 25mL. Why is precision so important here?"
+    ],
+    "level3": [
+      "The equivalence point is at 25mL where moles acid = moles base. Past this, excess OH⁻ makes pH shoot up rapidly. You're at {baseVolume}mL — that's {excess}mL past equivalence.",
+      "Stop adding base at or near 25mL. Each mL past that point raises pH dramatically because of the logarithmic scale."
+    ]
+  },
+  "large_angle": {
+    "level1": [
+      "📐 The simple pendulum formula T = 2π√(L/g) has an assumption. What is it?",
+      "Why do physics textbooks say 'small angle' when discussing pendulums?"
+    ],
+    "level2": [
+      "At {angle}°, sin(θ) ≠ θ anymore. How much error does this introduce to the period calculation?",
+      "Compare the period you see with what T = 2π√(L/g) predicts. Is there a gap? Why?"
+    ],
+    "level3": [
+      "The small angle approximation assumes sin(θ) ≈ θ (in radians), which works under ~15°. At {angle}°, sin({angle}°) = {sinVal} but {angle}° in radians = {radVal}. The error is significant.",
+      "Keep angle under 15° for the simple formula to be accurate. At large angles, the period increases beyond the simple prediction."
+    ]
+  },
+  "general": {
+    "level1": [
+      "🔍 Not sure what went wrong? Try resetting to default values and adjusting one parameter at a time.",
+      "📊 Science is about controlled experiments — change ONE variable and observe the effect."
+    ],
+    "level2": [
+      "Look at the bottom bar readings carefully. Which value seems unusual?",
+      "Compare your current readings to the default values. What changed and why?"
+    ],
+    "level3": [
+      "Check each parameter: is it within the normal operating range? The Quick Tips in the sidebar list the safe ranges.",
+      "Reset to defaults, then change only one slider while keeping everything else constant. Note what happens."
+    ]
+  }
 }

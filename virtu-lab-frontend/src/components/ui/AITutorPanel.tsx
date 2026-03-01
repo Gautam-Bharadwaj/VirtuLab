@@ -24,41 +24,99 @@ const speak = (text: string) => {
 const genId = () =>
   `msg-${Date.now()}-${Math.random().toString(36).slice(2, 7)}`;
 
-/** Map failure names to hint keys in /hints.json */
+/** Map failure names to hint keys */
 function failureToHintKey(failureName: string): string {
   const lower = failureName.toLowerCase();
   if (lower.includes('overvoltage')) return 'overvoltage';
-  if (lower.includes('short circuit') || lower.includes('short_circuit'))
-    return 'short_circuit';
-  if (lower.includes('denaturation') || lower.includes('enzyme'))
-    return 'enzyme_denaturation';
-  if (lower.includes('ph')) return 'ph_extreme';
+  if (lower.includes('short circuit') || lower.includes('short_circuit')) return 'short_circuit';
+  if (lower.includes('denaturation') || lower.includes('enzyme')) return 'enzyme_denaturation';
+  if (lower.includes('ph') || lower.includes('overshoot')) return 'ph_extreme';
+  if (lower.includes('angle')) return 'large_angle';
   return 'general';
 }
 
-let hintsCache: Record<string, string[]> | null = null;
+/* ─── Hints cache with 3-level structure ─── */
+interface HintLevels {
+  level1: string[];
+  level2: string[];
+  level3: string[];
+}
 
-async function loadHints(): Promise<Record<string, string[]>> {
+let hintsCache: Record<string, HintLevels> | null = null;
+
+async function loadHints(): Promise<Record<string, HintLevels>> {
   if (hintsCache) return hintsCache;
   try {
     const res = await fetch('/hints.json');
     hintsCache = await res.json();
     return hintsCache!;
   } catch {
-    return { general: ['🔍 Try resetting to default values and adjusting one parameter at a time.'] };
+    return {
+      general: {
+        level1: ['🔍 Try resetting to default values and adjusting one parameter at a time.'],
+        level2: ['Look at the bottom bar readings carefully. Which value seems unusual?'],
+        level3: ['Reset to defaults, then change only one slider while keeping everything else constant.'],
+      },
+    };
   }
 }
 
-function pickRandomHint(hints: Record<string, string[]>, key: string): string {
-  const pool = hints[key] ?? hints['general'] ?? ['Check your parameters!'];
-  return pool[Math.floor(Math.random() * pool.length)];
+function pickHintAtLevel(
+  hints: Record<string, HintLevels>,
+  key: string,
+  level: number,
+  inputs: Record<string, number>
+): string {
+  const hintSet = hints[key] ?? hints['general'];
+  if (!hintSet) return 'Check your parameters!';
+  const levelKey = `level${Math.min(level, 3)}` as keyof HintLevels;
+  const pool = hintSet[levelKey] ?? hintSet.level1 ?? ['Check your parameters!'];
+  let hint = pool[Math.floor(Math.random() * pool.length)];
+  // Replace template variables
+  for (const [k, v] of Object.entries(inputs)) {
+    hint = hint.replace(new RegExp(`\\{${k}\\}`, 'g'), String(v));
+  }
+  // Compute current for circuit
+  if (inputs.voltage !== undefined && inputs.resistance !== undefined) {
+    hint = hint.replace(/\{current\}/g, (inputs.voltage / inputs.resistance).toFixed(3));
+  }
+  return hint;
 }
+
+/* ─── Danger zone thresholds ─── */
+function isInDangerZone(lab: string, inputs: Record<string, number>): boolean {
+  switch (lab) {
+    case 'circuit': {
+      const current = (inputs.voltage ?? 0) / Math.max(inputs.resistance ?? 1, 0.01);
+      return current > 0.04; // 80% of 0.05A max
+    }
+    case 'titration':
+      return (inputs.baseVolume ?? 0) > 40;
+    case 'enzyme':
+      return (inputs.temperature ?? 0) > 55;
+    case 'pendulum':
+      return (inputs.angle ?? 0) > 70;
+    default:
+      return false;
+  }
+}
+
+const COOLDOWN_MS = 30000; // 30 seconds
 
 /* ─────────────────────────────────────────── */
 /* ─── AITutorPanel Component ─────────────── */
 /* ─────────────────────────────────────────── */
 const AITutorPanel: React.FC = () => {
-  const { tutorOpen, running, activeLab, failureState } = useLabStore();
+  const {
+    tutorOpen,
+    running,
+    failureState,
+    lastAIMessageTime,
+    setLastAIMessageTime,
+    misconceptionLevel,
+    incrementMisconceptionLevel,
+    setDangerStartTime,
+  } = useLabStore();
   const backendUrl = import.meta.env.VITE_BACKEND_URL || '';
 
   /* ── Local state ── */
@@ -76,7 +134,7 @@ const AITutorPanel: React.FC = () => {
 
   const scrollRef = useRef<HTMLDivElement>(null);
   const inputRef = useRef<HTMLInputElement>(null);
-  const lastAnalyzeRef = useRef<number>(0);
+  const prevFailureRef = useRef<string | null>(null);
 
   /* ── Auto-scroll on new messages ── */
   useEffect(() => {
@@ -88,84 +146,121 @@ const AITutorPanel: React.FC = () => {
     }
   }, [messages, isLoading]);
 
-  /* ── Add message helper ── */
-  const addMsg = useCallback((role: 'ai' | 'student', text: string) => {
-    setMessages((prev) => [
-      ...prev,
-      { id: genId(), role, text, timestamp: Date.now() },
-    ]);
-  }, []);
-
-  /* ── Offline fallback: use hints.json ── */
-  const offlineFallback = useCallback(async () => {
-    const hints = await loadHints();
-    const { failureState: fs } = useLabStore.getState();
-    const key = fs ? failureToHintKey(fs.name) : 'general';
-    const hint = pickRandomHint(hints, key);
-    addMsg('ai', hint);
-  }, [addMsg]);
-
-  /* ── Poll: every 3 seconds while running, POST to /api/tutor/analyze ── */
-  useEffect(() => {
-    if (!running) return;
-
-    const interval = setInterval(async () => {
-      // Prevent overlapping requests
-      const now = Date.now();
-      if (now - lastAnalyzeRef.current < 2500) return;
-      lastAnalyzeRef.current = now;
-
-      const state = useLabStore.getState();
-      const payload = {
-        activeLab: state.activeLab,
-        inputs: state.inputs,
-        running: state.running,
-        failureState: state.failureState,
-      };
-
-      try {
-        const res = await fetch(`${backendUrl}/api/tutor/analyze`, {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify(payload),
-        });
-
-        if (!res.ok) throw new Error(`HTTP ${res.status}`);
-
-        const data = await res.json();
-        if (data.should_intervene && data.message) {
-          addMsg('ai', data.message);
-        }
-      } catch {
-        // Offline or API unavailable → use local hints
-        await offlineFallback();
+  /* ── Add message helper (respects cooldown) ── */
+  const addMsg = useCallback(
+    (role: 'ai' | 'student', text: string, forceSend = false) => {
+      if (role === 'ai' && !forceSend) {
+        const now = Date.now();
+        if (now - lastAIMessageTime < COOLDOWN_MS) return; // cooldown active
+        setLastAIMessageTime(now);
       }
-    }, 3000);
+      setMessages((prev) => [
+        ...prev,
+        { id: genId(), role, text, timestamp: Date.now() },
+      ]);
+    },
+    [lastAIMessageTime, setLastAIMessageTime]
+  );
+
+  /* ── TRIGGER 1: Failure happens ── */
+  useEffect(() => {
+    if (!failureState) {
+      prevFailureRef.current = null;
+      return;
+    }
+    // Don't repeat for same failure
+    if (prevFailureRef.current === failureState.name) return;
+    prevFailureRef.current = failureState.name;
+
+    const key = failureToHintKey(failureState.name);
+    const level = (misconceptionLevel[key] ?? 0) + 1;
+    incrementMisconceptionLevel(key);
+
+    (async () => {
+      const hints = await loadHints();
+      const storeInputs = useLabStore.getState().inputs;
+      const hint = pickHintAtLevel(hints, key, level, storeInputs);
+      addMsg('ai', `⚠️ **${failureState.name}**\n\n${hint}`);
+    })();
+  }, [failureState]); // eslint-disable-line react-hooks/exhaustive-deps
+
+  /* ── TRIGGER 2: Danger zone for 5 seconds ── */
+  useEffect(() => {
+    if (!running) {
+      setDangerStartTime(null);
+      return;
+    }
+
+    const interval = setInterval(() => {
+      const state = useLabStore.getState();
+      const inDanger = isInDangerZone(state.activeLab, state.inputs);
+
+      if (inDanger) {
+        if (!state.dangerStartTime) {
+          setDangerStartTime(Date.now());
+        } else if (Date.now() - state.dangerStartTime >= 5000) {
+          // 5 seconds in danger zone — send gentle warning
+          const key = state.activeLab === 'circuit' ? 'overvoltage'
+            : state.activeLab === 'titration' ? 'ph_extreme'
+            : state.activeLab === 'enzyme' ? 'enzyme_denaturation'
+            : state.activeLab === 'pendulum' ? 'large_angle'
+            : 'general';
+          const level = (state.misconceptionLevel[key] ?? 0) + 1;
+
+          (async () => {
+            const hints = await loadHints();
+            const hint = pickHintAtLevel(hints, key, level, state.inputs);
+            addMsg('ai', `🔔 Gentle warning: You've been in the danger zone for a while.\n\n${hint}`);
+          })();
+          setDangerStartTime(null); // Reset so it doesn't fire continuously
+        }
+      } else {
+        setDangerStartTime(null);
+      }
+    }, 1000);
 
     return () => clearInterval(interval);
-  }, [running, addMsg, offlineFallback]);
+  }, [running]); // eslint-disable-line react-hooks/exhaustive-deps
 
-  /* ── Also notify on failure state changes ── */
-  useEffect(() => {
-    if (failureState) {
-      addMsg(
-        'ai',
-        `⚠️ **${failureState.name}** — ${failureState.description}\n\nLet me help you understand what went wrong...`
-      );
+  /* ── TRIGGER 3: Student clicks "Ask AI" or types message ── */
+  const handleAskAI = useCallback(async () => {
+    const state = useLabStore.getState();
+    addMsg('student', '💡 Help me understand what\'s happening', true);
+    setIsLoading(true);
+
+    try {
+      const res = await fetch(`${backendUrl}/api/tutor/ask`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          question: 'Help me understand the current experiment state',
+          activeLab: state.activeLab,
+          inputs: state.inputs,
+          failureState: state.failureState,
+        }),
+      });
+      if (!res.ok) throw new Error('API unavailable');
+      const data = await res.json();
+      addMsg('ai', data.reply || data.message, true);
+    } catch {
+      const hints = await loadHints();
+      const key = state.failureState ? failureToHintKey(state.failureState.name) : 'general';
+      const hint = pickHintAtLevel(hints, key, 1, state.inputs);
+      addMsg('ai', hint, true);
     }
-  }, [failureState, addMsg]);
+    setIsLoading(false);
+  }, [addMsg, backendUrl]);
 
   /* ── Student sends a message ── */
   const handleSend = () => {
     const text = input.trim();
     if (!text || isLoading) return;
-    addMsg('student', text);
+    addMsg('student', text, true);
     setInput('');
     inputRef.current?.focus();
 
-    // Simulate AI reply (would be replaced with real API call)
     setIsLoading(true);
-    setTimeout(async () => {
+    (async () => {
       const state = useLabStore.getState();
       try {
         const res = await fetch(`${backendUrl}/api/tutor/ask`, {
@@ -179,21 +274,19 @@ const AITutorPanel: React.FC = () => {
         });
         if (!res.ok) throw new Error('API unavailable');
         const data = await res.json();
-        addMsg('ai', data.reply || data.message);
+        addMsg('ai', data.reply || data.message, true);
       } catch {
-        // Offline fallback: local context-aware reply
         const replies: Record<string, string> = {
-          circuit:
-            "Great question! In circuits, Ohm's Law (V = IR) is fundamental. Try adjusting resistance and observe how current changes proportionally. The power dissipated is P = V²/R. 🔬",
-          titration:
-            "During titration, you're adding a known base to determine the unknown acid concentration. The equivalence point is where moles of acid = moles of base. Watch the pH curve! 📊",
-          enzyme:
-            "Enzyme kinetics follow Michaelis-Menten: v = Vmax·[S]/(Km+[S]). As substrate increases, rate approaches Vmax. Temperature affects the rate — but too high denatures the enzyme! 🧬",
+          circuit: "Great question! In circuits, Ohm's Law (V = IR) is fundamental. Try adjusting resistance and observe how current changes proportionally. 🔬",
+          titration: "During titration, you're adding a known base to determine the unknown acid concentration. Watch the pH curve! 📊",
+          enzyme: "Enzyme kinetics follow Michaelis-Menten: v = Vmax·[S]/(Km+[S]). Temperature affects the rate — but too high denatures the enzyme! 🧬",
+          pendulum: "The simple pendulum follows T = 2π√(L/g). Period depends on length and gravity, not mass or amplitude (for small angles). ⏱️",
+          gravity: "Newton's Law: F = GMm/r². Force increases with mass and decreases with the square of distance. 🌍",
         };
-        addMsg('ai', replies[state.activeLab] || "That's an interesting question! Try experimenting with the controls — I'll help you understand what you observe. 🔍");
+        addMsg('ai', replies[state.activeLab] || "That's an interesting question! Try experimenting with the controls. 🔍", true);
       }
       setIsLoading(false);
-    }, 800 + Math.random() * 600);
+    })();
   };
 
   const handleKeyDown = (e: React.KeyboardEvent) => {
@@ -205,11 +298,9 @@ const AITutorPanel: React.FC = () => {
 
   /* ── Speak button handler ── */
   const handleSpeak = (id: string, text: string) => {
-    // Strip markdown-like syntax for cleaner speech
     const clean = text.replace(/\*\*/g, '').replace(/⚠️/g, 'Warning: ');
     speak(clean);
     setSpeakingId(id);
-    // Reset after estimated duration
     setTimeout(() => setSpeakingId(null), Math.max(3000, clean.length * 60));
   };
 
@@ -231,13 +322,23 @@ const AITutorPanel: React.FC = () => {
             <div className="flex items-center gap-1.5">
               <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse" />
               <span className="text-[10px] text-emerald-400/80">
-                {running ? 'Monitoring experiment' : 'Online'}
+                {running ? 'Watching silently' : 'Online'}
               </span>
             </div>
           </div>
         </div>
 
         <div className="flex items-center gap-1">
+          {/* Ask AI Button — TRIGGER 3 */}
+          <button
+            id="ask-ai-btn"
+            onClick={handleAskAI}
+            disabled={isLoading}
+            className="px-2.5 py-1.5 rounded-lg bg-gradient-to-r from-blue-600/80 to-indigo-600/80 text-[10px] font-bold text-white hover:shadow-lg hover:shadow-blue-500/20 transition-all disabled:opacity-40"
+            title="Ask AI for guidance"
+          >
+            💡 Ask AI
+          </button>
           {/* Clear chat */}
           <button
             id="clear-chat"
@@ -261,6 +362,13 @@ const AITutorPanel: React.FC = () => {
         </div>
       </div>
 
+      {/* ── Event-Driven Notice ── */}
+      <div className="px-3 py-2 bg-blue-500/[0.04] border-b border-blue-500/10">
+        <span className="text-[10px] text-blue-400/60">
+          🧠 I only speak when something important happens — or when you ask.
+        </span>
+      </div>
+
       {/* ── Messages List ── */}
       <div
         ref={scrollRef}
@@ -276,13 +384,11 @@ const AITutorPanel: React.FC = () => {
               transition={{ duration: 0.2 }}
               className={`flex ${msg.role === 'student' ? 'justify-end' : 'justify-start'}`}
             >
-              {/* AI avatar */}
               {msg.role === 'ai' && (
                 <div className="w-6 h-6 rounded-full bg-emerald-500/20 flex items-center justify-center mr-2 mt-1 shrink-0">
                   <span className="text-xs">🤖</span>
                 </div>
               )}
-
               <div
                 className={`relative max-w-[80%] px-3.5 py-2.5 rounded-2xl text-sm leading-relaxed ${msg.role === 'student'
                   ? 'bg-gradient-to-r from-blue-600 to-indigo-600 text-white rounded-br-sm shadow-lg shadow-blue-500/10'
@@ -290,8 +396,6 @@ const AITutorPanel: React.FC = () => {
                   }`}
               >
                 <p className="whitespace-pre-wrap">{msg.text}</p>
-
-                {/* Speaker button on AI messages */}
                 {msg.role === 'ai' && (
                   <button
                     onClick={() => handleSpeak(msg.id, msg.text)}
@@ -313,11 +417,8 @@ const AITutorPanel: React.FC = () => {
                     </svg>
                   </button>
                 )}
-
-                {/* Timestamp */}
                 <span
-                  className={`block text-[9px] mt-1 ${msg.role === 'student' ? 'text-white/40 text-right' : 'text-white/20'
-                    }`}
+                  className={`block text-[9px] mt-1 ${msg.role === 'student' ? 'text-white/40 text-right' : 'text-white/20'}`}
                 >
                   {new Date(msg.timestamp).toLocaleTimeString([], {
                     hour: '2-digit',
@@ -352,25 +453,6 @@ const AITutorPanel: React.FC = () => {
           )}
         </AnimatePresence>
       </div>
-
-      {/* ── Active Monitoring Banner ── */}
-      <AnimatePresence>
-        {running && (
-          <motion.div
-            initial={{ height: 0, opacity: 0 }}
-            animate={{ height: 'auto', opacity: 1 }}
-            exit={{ height: 0, opacity: 0 }}
-            className="overflow-hidden"
-          >
-            <div className="px-3 py-2 bg-emerald-500/[0.06] border-t border-emerald-500/10 flex items-center gap-2">
-              <div className="w-2 h-2 rounded-full bg-emerald-400 animate-pulse" />
-              <span className="text-[11px] text-emerald-400/80">
-                Monitoring {activeLab === 'circuit' ? '⚡ Circuit' : activeLab === 'titration' ? '🧪 Titration' : '🧬 Enzyme'} experiment…
-              </span>
-            </div>
-          </motion.div>
-        )}
-      </AnimatePresence>
 
       {/* ── Input Area ── */}
       <div className="p-3 border-t border-white/[0.06]">
