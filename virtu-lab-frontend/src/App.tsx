@@ -1,20 +1,30 @@
-import { Routes, Route } from 'react-router-dom'
+import { Routes, Route, useParams } from 'react-router-dom'
+import { useEffect } from 'react'
 import { LabShell } from './components/ui/LabShell'
 import { SimulationEngine } from './components/simulations/SimulationEngine'
 import { ControlsSidebar } from './components/ui/ControlsSidebar'
 import { AITutorPanel } from './components/ui/AITutorPanel'
 import { TeacherDashboard } from './pages/TeacherDashboard'
+import { Home } from './pages/Home'
 import { useLabStore } from './store/useLabStore'
 
 function MainLab() {
-  const failureState = useLabStore((s) => s.failureState)
+  const { labId } = useParams();
+  const setActiveLab = useLabStore((s) => s.setActiveLab);
+  const failureState = useLabStore((s) => s.failureState);
+
+  useEffect(() => {
+    if (labId) {
+      setActiveLab(labId as any);
+    }
+  }, [labId, setActiveLab]);
 
   return (
     <LabShell
       sidebar={<ControlsSidebar />}
       tutor={<AITutorPanel />}
     >
-      <SimulationEngine />      {/* Ayush's R3F canvas */}
+      <SimulationEngine />
 
       {/* Floating failure notification */}
       {failureState && (
@@ -35,7 +45,8 @@ function MainLab() {
 export default function App() {
   return (
     <Routes>
-      <Route path="/" element={<MainLab />} />
+      <Route path="/" element={<Home />} />
+      <Route path="/lab/:labId" element={<MainLab />} />
       <Route path="/teacher" element={<TeacherDashboard />} />
     </Routes>
   )
