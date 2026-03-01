@@ -1,286 +1,151 @@
-import React, { useState } from 'react';
-import { useLabStore } from '../../store/useLabStore';
+import React, { useState, lazy, Suspense } from 'react';
+import { useLabStore, LabType } from '../../store/useLabStore';
 import { motion, AnimatePresence } from 'framer-motion';
 import { TheoryPart } from './TheoryPart';
 import { ProcedurePart } from './ProcedurePart';
 import { ResourcesPart } from './ResourcesPart';
-import { PendulumSim } from './PendulumSim';
-import { CircuitSim } from './CircuitSim';
-import { TitrationSim } from './TitrationSim';
-import { GravitySim } from './GravitySim';
-import { MicroscopeSim } from './MicroscopeSim';
+import { PredictionCard } from './PredictionCard';
+import { PredictionResult } from './PredictionResult';
 
-const labDescriptions: Record<string, any> = {
-  circuit: {
-    title: 'Circuit Forge',
-    subtitle: 'Build & simulate electrical circuits',
-    gradient: 'from-amber-500/20 via-orange-500/10 to-transparent',
-    accent: 'text-amber-400',
-    icon: '⚡',
-    component: <CircuitSim />,
-    animation: <CircuitAnimation />,
+const OhmLawSim = lazy(() => import('./OhmLawSim').then(m => ({ default: m.OhmLawSim })));
+const ProjectileSim = lazy(() => import('./ProjectileSim').then(m => ({ default: m.ProjectileSim })));
+const TitrationSim = lazy(() => import('./TitrationSim').then(m => ({ default: m.TitrationSim })));
+const MicroscopeSim = lazy(() => import('./MicroscopeSim').then(m => ({ default: m.MicroscopeSim })));
+const OpticsSim = lazy(() => import('./OpticsSim').then(m => ({ default: m.OpticsSim })));
+const LogicGatesSim = lazy(() => import('./LogicGatesSim').then(m => ({ default: m.LogicGatesSim })));
+const FlameTestSim = lazy(() => import('./FlameTestSim').then(m => ({ default: m.FlameTestSim })));
+const PeriodicTableSim = lazy(() => import('./PeriodicTableSim').then(m => ({ default: m.PeriodicTableSim })));
+const ReactionRateSim = lazy(() => import('./ReactionRateSim').then(m => ({ default: m.ReactionRateSim })));
+const CellStructureSim = lazy(() => import('./CellStructureSim').then(m => ({ default: m.CellStructureSim })));
+const MitosisSim = lazy(() => import('./MitosisSim').then(m => ({ default: m.MitosisSim })));
+const AnatomySim = lazy(() => import('./AnatomySim').then(m => ({ default: m.AnatomySim })));
+
+const labDescriptions: Record<LabType, any> = {
+  "ohm-law": {
+    title: "Ohm's Law & Resistance",
+    subtitle: "Study V-I characteristics and resistance",
+    gradient: "from-blue-500/20 via-cyan-500/10 to-transparent",
+    accent: "text-blue-400",
+    icon: "/icon_ohm_law.png",
+    component: OhmLawSim,
   },
-  titration: {
-    title: 'Titration Bench',
-    subtitle: 'Acid-base titration experiments',
-    gradient: 'from-emerald-500/20 via-teal-500/10 to-transparent',
-    accent: 'text-emerald-400',
-    icon: '🧪',
-    component: <TitrationSim />,
-    animation: <TitrationAnimation />,
+  "projectile-motion": {
+    title: "Projectile Motion",
+    subtitle: "Analyze trajectory, velocity, and angles",
+    gradient: "from-indigo-500/20 via-blue-500/10 to-transparent",
+    accent: "text-indigo-400",
+    icon: "/icon_projectile.png",
+    component: ProjectileSim,
   },
-  enzyme: {
-    title: 'Microscope Cell View',
-    subtitle: 'Inspect micro-organic structures',
-    gradient: 'from-purple-500/20 via-violet-500/10 to-transparent',
-    accent: 'text-purple-400',
-    icon: '🧬',
-    component: <MicroscopeSim />,
-    animation: <EnzymeAnimation />,
+  "optics-bench": {
+    title: "Optics Bench",
+    subtitle: "Image formation by lenses & mirrors",
+    gradient: "from-cyan-500/20 via-blue-500/10 to-transparent",
+    accent: "text-cyan-400",
+    icon: "/icon_optics.png",
+    component: OpticsSim,
   },
-  pendulum: {
-    title: 'Pendulum Motion',
-    subtitle: 'Study harmonic motion & gravity',
-    gradient: 'from-blue-500/20 via-indigo-500/10 to-transparent',
-    accent: 'text-blue-400',
-    icon: '⏱️',
-    component: <PendulumSim />,
-    animation: <PendulumAnimation />,
+  "logic-gates": {
+    title: "Logic Gates",
+    subtitle: "Construct digital circuits with basic gates",
+    gradient: "from-blue-600/20 via-indigo-600/10 to-transparent",
+    accent: "text-blue-400",
+    icon: "/icon_logic_gates.png",
+    component: LogicGatesSim,
   },
-  gravity: {
-    title: 'Gravity Sandbox',
-    subtitle: 'Planetary orbits & attraction',
-    gradient: 'from-rose-500/20 via-red-500/10 to-transparent',
-    accent: 'text-rose-400',
-    icon: '🪐',
-    component: <GravitySim />,
-    animation: <GravityAnimation />,
+  "titration": {
+    title: "Acid-Base Titration",
+    subtitle: "Determine concentration using indicators",
+    gradient: "from-orange-500/20 via-rose-500/10 to-transparent",
+    accent: "text-orange-400",
+    icon: "/icon_titration.png",
+    component: TitrationSim,
+  },
+  "flame-test": {
+    title: "Flame Test",
+    subtitle: "Identify elements by flame color",
+    gradient: "from-rose-500/20 via-orange-500/10 to-transparent",
+    accent: "text-rose-400",
+    icon: "/icon_flame_test.png",
+    component: FlameTestSim,
+  },
+  "periodic-table": {
+    title: "Periodic Table Trends",
+    subtitle: "Explore atomic properties and structures",
+    gradient: "from-amber-500/20 via-orange-500/10 to-transparent",
+    accent: "text-amber-400",
+    icon: "/icon_periodic_table.png",
+    component: PeriodicTableSim,
+  },
+  "reaction-rate": {
+    title: "Rate of Reaction",
+    subtitle: "Effect of temp & concentration on rates",
+    gradient: "from-orange-600/20 via-red-600/10 to-transparent",
+    accent: "text-orange-500",
+    icon: "/icon_reaction_rate.png",
+    component: ReactionRateSim,
+  },
+  "microscope": {
+    title: "Virtual Microscope",
+    subtitle: "Examine onion peel and cheek cells",
+    gradient: "from-emerald-500/20 via-teal-500/10 to-transparent",
+    accent: "text-emerald-400",
+    icon: "/icon_microscope.png",
+    component: MicroscopeSim,
+  },
+  "cell-structure": {
+    title: "Cell Structure",
+    subtitle: "Functions of organelles in plant/animal cells",
+    gradient: "from-teal-500/20 via-emerald-500/10 to-transparent",
+    accent: "text-teal-400",
+    icon: "/icon_cell.png",
+    component: CellStructureSim,
+  },
+  "mitosis": {
+    title: "Mitosis",
+    subtitle: "Follow stages of somatic cell division",
+    gradient: "from-green-600/20 via-emerald-600/10 to-transparent",
+    accent: "text-green-500",
+    icon: "/icon_mitosis.png",
+    component: MitosisSim,
+  },
+  "anatomy": {
+    title: "Human Anatomy",
+    subtitle: "Explore 3D models of heart & brain",
+    gradient: "from-emerald-600/20 via-teal-600/10 to-transparent",
+    accent: "text-emerald-500",
+    icon: "/icon_anatomy.png",
+    component: AnatomySim,
   },
 };
 
-function PendulumAnimation() {
-  return (
-    <div className="absolute inset-0 flex items-center justify-center overflow-hidden opacity-20">
-      <svg className="w-full h-full" viewBox="0 0 400 300">
-        <motion.g
-          animate={{ rotate: [-45, 45, -45] }}
-          transition={{ duration: 2.5, repeat: Infinity, ease: "easeInOut" }}
-          style={{ transformOrigin: '200px 50px' }}
-        >
-          <line x1="200" y1="50" x2="200" y2="220" stroke="#60A5FA" strokeWidth="2" />
-          <circle cx="200" cy="220" r="15" fill="#3B82F6" />
-          <circle cx="200" cy="220" r="8" fill="#93C5FD" opacity="0.5" />
-        </motion.g>
-        <line x1="150" y1="50" x2="250" y2="50" stroke="#60A5FA" strokeWidth="4" strokeLinecap="round" />
-      </svg>
-    </div>
-  );
-}
-
-function GravityAnimation() {
-  return (
-    <div className="absolute inset-0 flex items-center justify-center overflow-hidden opacity-20">
-      <svg className="w-full h-full" viewBox="0 0 400 300">
-        <circle cx="200" cy="150" r="30" fill="#FB7185" />
-        <motion.g
-          animate={{ rotate: 360 }}
-          transition={{ duration: 8, repeat: Infinity, ease: "linear" }}
-          style={{ transformOrigin: '200px 150px' }}
-        >
-          <circle cx="320" cy="150" r="10" fill="#F43F5E" />
-          <ellipse cx="200" cy="150" rx="120" ry="60" fill="none" stroke="#FDA4AF" strokeWidth="1" strokeDasharray="5 5" />
-        </motion.g>
-        <motion.g
-          animate={{ rotate: -360 }}
-          transition={{ duration: 12, repeat: Infinity, ease: "linear" }}
-          style={{ transformOrigin: '200px 150px' }}
-        >
-          <circle cx="270" cy="150" r="6" fill="#E11D48" />
-          <ellipse cx="200" cy="150" rx="70" ry="35" fill="none" stroke="#FDA4AF" strokeWidth="0.5" strokeDasharray="3 3" />
-        </motion.g>
-      </svg>
-    </div>
-  );
-}
-
-function CircuitAnimation() {
-  return (
-    <div className="absolute inset-0 flex items-center justify-center overflow-hidden opacity-20">
-      {/* Animated circuit paths */}
-      <svg className="w-full h-full" viewBox="0 0 400 300">
-        <motion.path
-          d="M 50 150 L 120 150 L 120 80 L 280 80 L 280 150 L 350 150"
-          fill="none"
-          stroke="#F59E0B"
-          strokeWidth="2"
-          initial={{ pathLength: 0 }}
-          animate={{ pathLength: 1 }}
-          transition={{ duration: 2, repeat: Infinity, repeatType: 'loop' }}
-        />
-        <motion.path
-          d="M 50 150 L 120 150 L 120 220 L 280 220 L 280 150 L 350 150"
-          fill="none"
-          stroke="#F59E0B"
-          strokeWidth="2"
-          initial={{ pathLength: 0 }}
-          animate={{ pathLength: 1 }}
-          transition={{ duration: 2, delay: 0.5, repeat: Infinity, repeatType: 'loop' }}
-        />
-        {/* Moving electrons */}
-        {[0, 1, 2, 3, 4].map((i) => (
-          <motion.circle
-            key={i}
-            r="3"
-            fill="#FBBF24"
-            initial={{ offsetDistance: '0%' }}
-            animate={{ offsetDistance: '100%' }}
-            transition={{ duration: 3, delay: i * 0.6, repeat: Infinity, ease: 'linear' }}
-            style={{ offsetPath: "path('M 50 150 L 120 150 L 120 80 L 280 80 L 280 150 L 350 150')" }}
-          />
-        ))}
-        {/* Resistor symbols */}
-        <motion.rect x="170" y="68" width="60" height="24" rx="4" fill="none" stroke="#F59E0B" strokeWidth="1.5"
-          animate={{ opacity: [0.3, 0.8, 0.3] }}
-          transition={{ duration: 2, repeat: Infinity }}
-        />
-        <motion.rect x="170" y="208" width="60" height="24" rx="4" fill="none" stroke="#F59E0B" strokeWidth="1.5"
-          animate={{ opacity: [0.3, 0.8, 0.3] }}
-          transition={{ duration: 2, delay: 0.5, repeat: Infinity }}
-        />
-        {/* Battery */}
-        <line x1="50" y1="130" x2="50" y2="170" stroke="#F59E0B" strokeWidth="3" />
-        <line x1="40" y1="140" x2="40" y2="160" stroke="#F59E0B" strokeWidth="1.5" />
-      </svg>
-    </div>
-  );
-}
-
-function TitrationAnimation() {
-  return (
-    <div className="absolute inset-0 flex items-center justify-center overflow-hidden opacity-20">
-      <svg className="w-full h-full" viewBox="0 0 400 300">
-        {/* Burette */}
-        <rect x="185" y="20" width="30" height="120" rx="4" fill="none" stroke="#10B981" strokeWidth="1.5" />
-        <motion.rect
-          x="187" y="22" width="26" height="116" rx="3"
-          fill="#10B981"
-          initial={{ scaleY: 1 }}
-          animate={{ scaleY: [1, 0.3, 1] }}
-          transition={{ duration: 6, repeat: Infinity }}
-          style={{ transformOrigin: 'top' }}
-        />
-        {/* Drops */}
-        {[0, 1, 2].map((i) => (
-          <motion.ellipse
-            key={i}
-            cx="200"
-            rx="4"
-            ry="6"
-            fill="#34D399"
-            initial={{ cy: 140, opacity: 1 }}
-            animate={{ cy: 200, opacity: 0 }}
-            transition={{ duration: 1.5, delay: i * 0.8, repeat: Infinity }}
-          />
-        ))}
-        {/* Beaker */}
-        <path d="M 140 200 L 140 270 Q 140 280 150 280 L 250 280 Q 260 280 260 270 L 260 200" fill="none" stroke="#10B981" strokeWidth="1.5" />
-        <motion.rect
-          x="142" y="220" width="116" height="58" rx="2"
-          fill="#10B981"
-          initial={{ opacity: 0.15 }}
-          animate={{ opacity: [0.15, 0.4, 0.15] }}
-          transition={{ duration: 6, repeat: Infinity }}
-        />
-        {/* Stir bar */}
-        <motion.line
-          x1="180" y1="265" x2="220" y2="265"
-          stroke="#6EE7B7"
-          strokeWidth="3"
-          strokeLinecap="round"
-          animate={{ rotate: 360 }}
-          transition={{ duration: 2, repeat: Infinity, ease: 'linear' }}
-          style={{ transformOrigin: '200px 265px' }}
-        />
-      </svg>
-    </div>
-  );
-}
-
-function EnzymeAnimation() {
-  return (
-    <div className="absolute inset-0 flex items-center justify-center overflow-hidden opacity-20">
-      <svg className="w-full h-full" viewBox="0 0 400 300">
-        {/* DNA-like helix */}
-        {Array.from({ length: 12 }).map((_, i) => (
-          <React.Fragment key={i}>
-            <motion.circle
-              cx={200 + Math.sin(i * 0.5) * 60}
-              cy={30 + i * 22}
-              r="5"
-              fill="#A855F7"
-              animate={{
-                cx: [200 + Math.sin(i * 0.5) * 60, 200 + Math.sin(i * 0.5 + Math.PI) * 60, 200 + Math.sin(i * 0.5) * 60],
-              }}
-              transition={{ duration: 4, repeat: Infinity, ease: 'easeInOut' }}
-            />
-            <motion.circle
-              cx={200 + Math.sin(i * 0.5 + Math.PI) * 60}
-              cy={30 + i * 22}
-              r="5"
-              fill="#C084FC"
-              animate={{
-                cx: [200 + Math.sin(i * 0.5 + Math.PI) * 60, 200 + Math.sin(i * 0.5) * 60, 200 + Math.sin(i * 0.5 + Math.PI) * 60],
-              }}
-              transition={{ duration: 4, repeat: Infinity, ease: 'easeInOut' }}
-            />
-            <motion.line
-              x1={200 + Math.sin(i * 0.5) * 60}
-              y1={30 + i * 22}
-              x2={200 + Math.sin(i * 0.5 + Math.PI) * 60}
-              y2={30 + i * 22}
-              stroke="#7C3AED"
-              strokeWidth="1"
-              animate={{ opacity: [0.2, 0.6, 0.2] }}
-              transition={{ duration: 2, delay: i * 0.15, repeat: Infinity }}
-            />
-          </React.Fragment>
-        ))}
-        {/* Floating enzyme molecules */}
-        {[
-          { x: 80, y: 80 },
-          { x: 320, y: 120 },
-          { x: 90, y: 240 },
-          { x: 310, y: 220 },
-        ].map((pos, i) => (
-          <motion.g key={i}
-            animate={{
-              x: [0, Math.sin(i) * 15, 0],
-              y: [0, Math.cos(i) * 10, 0],
-            }}
-            transition={{ duration: 3 + i, repeat: Infinity, ease: 'easeInOut' }}
-          >
-            <circle cx={pos.x} cy={pos.y} r="12" fill="none" stroke="#A855F7" strokeWidth="1" strokeDasharray="4 2" />
-            <circle cx={pos.x} cy={pos.y} r="5" fill="#C084FC" opacity="0.4" />
-          </motion.g>
-        ))}
-      </svg>
-    </div>
-  );
-}
-
 export const SimulationEngine: React.FC = () => {
-  const { activeLab, activeTab } = useLabStore();
+  const { activeLab, activeTab, running, predictionSkipped, showPredictionResult, getPredictionConfig, inputs, addObservation } = useLabStore();
   const [initialized, setInitialized] = useState(false);
-  const lab = labDescriptions[activeLab] || labDescriptions['circuit']; // Fallback to circuit
+  const lab = labDescriptions[activeLab] || labDescriptions["ohm-law"];
+  const hasPrediction = getPredictionConfig() !== null;
 
-  // Reset initialization when switching labs
   React.useEffect(() => {
     setInitialized(false);
   }, [activeLab]);
 
+  React.useEffect(() => {
+    if (!running) return;
+    addObservation({ ...inputs });
+    const interval = setInterval(() => {
+      const state = useLabStore.getState();
+      if (state.running) {
+        state.addObservation({ ...state.inputs });
+      }
+    }, 8000);
+    return () => clearInterval(interval);
+  }, [running]); // eslint-disable-line react-hooks/exhaustive-deps
+
   if (activeTab === 'theory') return <TheoryPart />;
   if (activeTab === 'procedure') return <ProcedurePart />;
   if (activeTab === 'resources') return <ResourcesPart />;
+
+  const showPredictionCard = initialized && !running && hasPrediction && !predictionSkipped;
 
   return (
     <div id="simulation-container" className="relative w-full h-full rounded-2xl overflow-hidden">
@@ -294,10 +159,9 @@ export const SimulationEngine: React.FC = () => {
             className="absolute inset-0 glass-panel rounded-2xl flex flex-col items-center justify-center p-8 text-center"
           >
             <div className={`absolute inset-0 bg-gradient-radial ${lab.gradient} pointer-events-none`} />
-            {lab.animation}
-            <div className="relative z-10">
-              <span className="text-7xl mb-6 block drop-shadow-lg">{lab.icon}</span>
-              <h2 className={`text-5xl font-black ${lab.accent} mb-4 uppercase tracking-tighter`}>{lab.title}</h2>
+            <div className="relative z-10 flex flex-col items-center">
+              <img src={lab.icon} alt={lab.title} className="w-28 h-28 object-contain mb-6 drop-shadow-[0_10px_20px_rgba(0,0,0,0.5)]" />
+              <h2 className={`text-4xl font-black ${lab.accent} mb-4 uppercase tracking-tighter`}>{lab.title}</h2>
               <p className="text-xl text-white/50 mb-10 max-w-lg mx-auto">{lab.subtitle}</p>
 
               <motion.button
@@ -306,13 +170,12 @@ export const SimulationEngine: React.FC = () => {
                 onClick={() => setInitialized(true)}
                 className="group relative flex items-center gap-4 bg-orange-500 text-black px-12 py-5 rounded-full font-black uppercase tracking-[0.2em] text-sm shadow-[0_0_40px_rgba(249,115,22,0.3)]"
               >
-                {/* Enhanced ripple effects */}
                 <div className="absolute inset-0 rounded-full bg-white/40 animate-[ping_3s_cubic-bezier(0,0,0.2,1)_infinite]" />
                 <div className="absolute inset-0 rounded-full bg-white/30 animate-[ping_3s_cubic-bezier(0,0,0.2,1)_infinite_1s]" />
                 <div className="absolute inset-0 rounded-full bg-white/20 animate-[ping_3s_cubic-bezier(0,0,0.2,1)_infinite_2s]" />
                 <div className="absolute inset-0 rounded-full bg-white/10 group-hover:bg-white/20 transition-colors" />
                 <span>Initialize Simulation</span>
-                <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={3} d="M13 7l5 5m0 0l-5 5m5-5H6" /></svg>
+                <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path d="M13 7l5 5m0 0l-5 5m5-5H6" strokeWidth={3} strokeLinecap="round" strokeLinejoin="round" /></svg>
               </motion.button>
             </div>
           </motion.div>
@@ -323,7 +186,22 @@ export const SimulationEngine: React.FC = () => {
             animate={{ opacity: 1 }}
             className="absolute inset-0"
           >
-            {lab.component}
+            <Suspense fallback={
+              <div className="flex flex-col items-center justify-center h-full gap-4">
+                <div className="w-12 h-12 border-4 border-orange-500/20 border-t-orange-500 rounded-full animate-spin" />
+                <span className="text-white/40 font-bold uppercase tracking-widest text-[10px]">Loading Module...</span>
+              </div>
+            }>
+              <lab.component />
+            </Suspense>
+
+            <AnimatePresence>
+              {showPredictionCard && <PredictionCard />}
+            </AnimatePresence>
+
+            <AnimatePresence>
+              {showPredictionResult && <PredictionResult />}
+            </AnimatePresence>
           </motion.div>
         )}
       </AnimatePresence>
