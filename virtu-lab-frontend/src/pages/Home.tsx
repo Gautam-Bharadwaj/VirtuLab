@@ -208,3 +208,33 @@ export const Home: React.FC = () => {
                         layout
                         className="grid md:grid-cols-2 lg:grid-cols-4 gap-6"
                     >
+                        <AnimatePresence mode="popLayout">
+                            {filteredSimulations.map((sim) => (
+                                <Link
+                                    to={`/lab/${sim.labKey}`}
+                                    key={sim.name}
+                                    className="block"
+                                >
+                                    <motion.div
+                                        layout
+                                        initial={{ opacity: 0, scale: 0.9 }}
+                                        animate={{ opacity: 1, scale: 1 }}
+                                        exit={{ opacity: 0, scale: 0.9 }}
+                                        transition={{ duration: 0.3 }}
+                                        className="group relative h-72 rounded-[2rem] overflow-hidden cursor-pointer"
+                                    >
+                                        {/* Placeholder Background Image - we use a clean gradient for now */}
+                                        <div className="absolute inset-0 bg-gradient-to-br from-[#171717] to-black border border-white/10 group-hover:border-white/20 transition-colors z-0"></div>
+
+                                        {/* Image simulation blur */}
+                                        <div className={`absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-32 h-32 ${sim.color} rounded-full blur-[60px] opacity-20 group-hover:opacity-40 transition-opacity z-0`}></div>
+
+                                        <div className="absolute inset-0 p-6 flex flex-col justify-end z-10 bg-gradient-to-t from-black/90 via-black/40 to-transparent">
+                                            <span className={`text-[10px] font-bold uppercase tracking-wider ${sim.color.replace('bg-', 'text-')} mb-2`}>{sim.subject}</span>
+                                            <h3 className="text-xl font-bold text-white mb-2">{sim.name}</h3>
+
+                                            <div className="flex items-center gap-2 opacity-0 translate-y-4 group-hover:opacity-100 group-hover:translate-y-0 transition-all duration-300">
+                                                <div className="w-8 h-8 rounded-full bg-white flex items-center justify-center text-black">
+                                                    <svg className="w-4 h-4 ml-0.5" fill="currentColor" viewBox="0 0 24 24"><path d="M8 5v14l11-7z" /></svg>
+                                                </div>
+                                                <span className="text-xs font-semibold text-white">Start Simulation</span>
