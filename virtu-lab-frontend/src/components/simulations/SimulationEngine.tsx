@@ -187,3 +187,30 @@ function TitrationAnimation() {
         <motion.rect
           x="142" y="220" width="116" height="58" rx="2"
           fill="#10B981"
+          initial={{ opacity: 0.15 }}
+          animate={{ opacity: [0.15, 0.4, 0.15] }}
+          transition={{ duration: 6, repeat: Infinity }}
+        />
+        {/* Stir bar */}
+        <motion.line
+          x1="180" y1="265" x2="220" y2="265"
+          stroke="#6EE7B7"
+          strokeWidth="3"
+          strokeLinecap="round"
+          animate={{ rotate: 360 }}
+          transition={{ duration: 2, repeat: Infinity, ease: 'linear' }}
+          style={{ transformOrigin: '200px 265px' }}
+        />
+      </svg>
+    </div>
+  );
+}
+
+function EnzymeAnimation() {
+  return (
+    <div className="absolute inset-0 flex items-center justify-center overflow-hidden opacity-20">
+      <svg className="w-full h-full" viewBox="0 0 400 300">
+        {/* DNA-like helix */}
+        {Array.from({ length: 12 }).map((_, i) => (
+          <React.Fragment key={i}>
+            <motion.circle
