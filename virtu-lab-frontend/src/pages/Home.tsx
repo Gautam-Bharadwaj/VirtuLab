@@ -148,3 +148,33 @@ export const Home: React.FC = () => {
                             { title: 'Physics Engine', subject: 'Physics', desc: 'Experiment with gravity, optics, and thermodynamics in a real-time sandbox environment.', color: 'from-blue-500/20 to-cyan-500/5', image: '/physics_icon.png', hover: 'hover:border-blue-500/50 hover:shadow-[0_0_30px_rgba(56,189,248,0.2)]' },
                             { title: 'Chemistry Lab', subject: 'Chemistry', desc: 'Mix compounds, observe molecular reactions, and learn stoichiometry safely and interactively.', color: 'from-orange-500/20 to-rose-500/5', image: '/chemistry_icon.png', hover: 'hover:border-orange-500/50 hover:shadow-[0_0_30px_rgba(249,115,22,0.2)]' },
                             { title: 'Biology Cell', subject: 'Biology', desc: 'Zoom into the microscopic world. Inspect cell structures, DNA, and organic ecosystems.', color: 'from-emerald-500/20 to-teal-500/5', image: '/biology_icon.png', hover: 'hover:border-emerald-500/50 hover:shadow-[0_0_30px_rgba(16,185,129,0.2)]' },
+                        ].map((feat, idx) => (
+                            <motion.div
+                                key={idx}
+                                initial={{ opacity: 0, y: 30 }}
+                                whileInView={{ opacity: 1, y: 0 }}
+                                transition={{ delay: idx * 0.15, duration: 0.5 }}
+                                viewport={{ once: true }}
+                                onClick={() => {
+                                    setSelectedCategory(feat.subject);
+                                    scrollToSimulations();
+                                }}
+                                className={`p-8 rounded-[2rem] border border-white/10 bg-gradient-to-b ${feat.color} relative overflow-hidden group transition-all duration-500 cursor-pointer ${feat.hover}`}
+                            >
+                                {/* Background glow effect */}
+                                <div className="absolute top-0 right-0 w-32 h-32 bg-white/5 rounded-full blur-3xl group-hover:bg-white/10 transition-colors" />
+
+                                <div className="w-20 h-20 mb-6 relative z-10 group-hover:scale-110 group-hover:-rotate-6 transition-transform duration-500">
+                                    <img
+                                        src={feat.image}
+                                        alt={feat.title}
+                                        className="w-full h-full object-contain filter drop-shadow-lg"
+                                    />
+                                </div>
+                                <h3 className="text-2xl font-bold mb-3 text-white relative z-10">{feat.title}</h3>
+                                <p className="text-white/50 text-base leading-relaxed relative z-10">{feat.desc}</p>
+
+                                {/* Explore button indicator */}
+                                <div className="mt-8 flex items-center gap-2 text-sm font-bold text-white/30 group-hover:text-white transition-colors">
+                                    ENTER LAB
+                                    <svg className="w-4 h-4 group-hover:translate-x-2 transition-transform" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 8l4 4m0 0l-4 4m4-4H3" /></svg>
