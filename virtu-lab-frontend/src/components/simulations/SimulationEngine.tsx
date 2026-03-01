@@ -241,3 +241,30 @@ function EnzymeAnimation() {
               stroke="#7C3AED"
               strokeWidth="1"
               animate={{ opacity: [0.2, 0.6, 0.2] }}
+              transition={{ duration: 2, delay: i * 0.15, repeat: Infinity }}
+            />
+          </React.Fragment>
+        ))}
+        {/* Floating enzyme molecules */}
+        {[
+          { x: 80, y: 80 },
+          { x: 320, y: 120 },
+          { x: 90, y: 240 },
+          { x: 310, y: 220 },
+        ].map((pos, i) => (
+          <motion.g key={i}
+            animate={{
+              x: [0, Math.sin(i) * 15, 0],
+              y: [0, Math.cos(i) * 10, 0],
+            }}
+            transition={{ duration: 3 + i, repeat: Infinity, ease: 'easeInOut' }}
+          >
+            <circle cx={pos.x} cy={pos.y} r="12" fill="none" stroke="#A855F7" strokeWidth="1" strokeDasharray="4 2" />
+            <circle cx={pos.x} cy={pos.y} r="5" fill="#C084FC" opacity="0.4" />
+          </motion.g>
+        ))}
+      </svg>
+    </div>
+  );
+}
+
