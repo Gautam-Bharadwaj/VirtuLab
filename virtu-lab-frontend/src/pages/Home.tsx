@@ -58,3 +58,33 @@ export const Home: React.FC = () => {
                         {/* Little circles below pointing to the character */}
                         <div className="absolute -bottom-3 right-6 w-3 h-3 border border-orange-500/30 bg-[#171717] rounded-full shadow-[0_0_10px_rgba(249,115,22,0.2)]" />
                         <div className="absolute -bottom-6 right-3 w-1.5 h-1.5 border border-orange-500/30 bg-[#171717] rounded-full shadow-[0_0_5px_rgba(249,115,22,0.2)]" />
+                    </div>
+                    <img src="/train-nobg.png" alt="Scrolling character indicator" className="w-full h-full object-contain relative z-20" />
+                </motion.div>
+            </div>
+
+            <LandingNavbar />
+            <TrainBanner />
+
+            {/* AI Chat Modal */}
+            <AnimatePresence>
+                {isChatOpen && (
+                    <motion.div
+                        initial={{ opacity: 0, y: 20, scale: 0.95 }}
+                        animate={{ opacity: 1, y: 0, scale: 1 }}
+                        exit={{ opacity: 0, y: 20, scale: 0.95 }}
+                        className="fixed bottom-6 right-6 md:right-12 z-[120] w-[340px] rounded-2xl glass-panel bg-[#171717] border border-white/10 shadow-2xl overflow-hidden flex flex-col"
+                    >
+                        <div className="p-4 bg-gradient-to-r from-orange-500/20 via-amber-500/10 to-transparent border-b border-white/5 flex items-center justify-between relative overflow-hidden">
+                            {/* Animated background glow */}
+                            <div className="absolute top-0 right-1/4 w-32 h-32 bg-orange-500/20 rounded-full blur-3xl opacity-50 pointer-events-none" />
+
+                            <div className="flex items-center gap-4 relative z-10">
+                                <div className="relative">
+                                    {/* Avatar Image only */}
+                                    <img src="/train-nobg.png" alt="AI Agent" className="w-16 h-16 object-contain drop-shadow-[0_4px_8px_rgba(249,115,22,0.3)]" />
+                                    {/* Online Indicator */}
+                                    <div className="absolute bottom-1 right-1 w-3.5 h-3.5 bg-emerald-500 border-2 border-[#171717] rounded-full shadow-[0_0_8px_rgba(16,185,129,0.5)]"></div>
+                                </div>
+                                <div>
+                                    <div className="flex items-center gap-1.5 mb-0.5">
