@@ -3,22 +3,18 @@ import { useLabStore, LabType } from '../../store/useLabStore';
 import { motion, AnimatePresence } from 'framer-motion';
 import { TheoryPart } from './TheoryPart';
 import { ProcedurePart } from './ProcedurePart';
-import { ResourcesPart } from './ResourcesPart';
 import { PredictionCard } from './PredictionCard';
 import { PredictionResult } from './PredictionResult';
 
 const OhmLawSim = lazy(() => import('./OhmLawSim').then(m => ({ default: m.OhmLawSim })));
 const ProjectileSim = lazy(() => import('./ProjectileSim').then(m => ({ default: m.ProjectileSim })));
 const TitrationSim = lazy(() => import('./TitrationSim').then(m => ({ default: m.TitrationSim })));
-const MicroscopeSim = lazy(() => import('./MicroscopeSim').then(m => ({ default: m.MicroscopeSim })));
 const OpticsSim = lazy(() => import('./OpticsSim').then(m => ({ default: m.OpticsSim })));
 const LogicGatesSim = lazy(() => import('./LogicGatesSim').then(m => ({ default: m.LogicGatesSim })));
 const FlameTestSim = lazy(() => import('./FlameTestSim').then(m => ({ default: m.FlameTestSim })));
 const PeriodicTableSim = lazy(() => import('./PeriodicTableSim').then(m => ({ default: m.PeriodicTableSim })));
 const ReactionRateSim = lazy(() => import('./ReactionRateSim').then(m => ({ default: m.ReactionRateSim })));
-const CellStructureSim = lazy(() => import('./CellStructureSim').then(m => ({ default: m.CellStructureSim })));
 const MitosisSim = lazy(() => import('./MitosisSim').then(m => ({ default: m.MitosisSim })));
-const AnatomySim = lazy(() => import('./AnatomySim').then(m => ({ default: m.AnatomySim })));
 
 const labDescriptions: Record<LabType, any> = {
   "ohm-law": {
@@ -85,22 +81,6 @@ const labDescriptions: Record<LabType, any> = {
     icon: "/icon_reaction_rate.png",
     component: ReactionRateSim,
   },
-  "microscope": {
-    title: "Virtual Microscope",
-    subtitle: "Examine onion peel and cheek cells",
-    gradient: "from-emerald-500/20 via-teal-500/10 to-transparent",
-    accent: "text-emerald-400",
-    icon: "/icon_microscope.png",
-    component: MicroscopeSim,
-  },
-  "cell-structure": {
-    title: "Cell Structure",
-    subtitle: "Functions of organelles in plant/animal cells",
-    gradient: "from-teal-500/20 via-emerald-500/10 to-transparent",
-    accent: "text-teal-400",
-    icon: "/icon_cell.png",
-    component: CellStructureSim,
-  },
   "mitosis": {
     title: "Mitosis",
     subtitle: "Follow stages of somatic cell division",
@@ -108,14 +88,6 @@ const labDescriptions: Record<LabType, any> = {
     accent: "text-green-500",
     icon: "/icon_mitosis.png",
     component: MitosisSim,
-  },
-  "anatomy": {
-    title: "Human Anatomy",
-    subtitle: "Explore 3D models of heart & brain",
-    gradient: "from-emerald-600/20 via-teal-600/10 to-transparent",
-    accent: "text-emerald-500",
-    icon: "/icon_anatomy.png",
-    component: AnatomySim,
   },
 };
 
@@ -143,7 +115,6 @@ export const SimulationEngine: React.FC = () => {
 
   if (activeTab === 'theory') return <TheoryPart />;
   if (activeTab === 'procedure') return <ProcedurePart />;
-  if (activeTab === 'resources') return <ResourcesPart />;
 
   const showPredictionCard = initialized && !running && hasPrediction && !predictionSkipped;
 
