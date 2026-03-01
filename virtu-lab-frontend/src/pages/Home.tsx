@@ -178,3 +178,33 @@ export const Home: React.FC = () => {
                                 <div className="mt-8 flex items-center gap-2 text-sm font-bold text-white/30 group-hover:text-white transition-colors">
                                     ENTER LAB
                                     <svg className="w-4 h-4 group-hover:translate-x-2 transition-transform" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 8l4 4m0 0l-4 4m4-4H3" /></svg>
+                                </div>
+                            </motion.div>
+                        ))}
+                    </div>
+                </section>
+
+                {/* Simulations Section */}
+                <section id="simulations" className="relative z-10 py-24 px-6 max-w-7xl mx-auto border-t border-white/5">
+                    <div className="text-center mb-16">
+                        <h2 className="text-4xl font-bold mb-4 text-white">
+                            {selectedCategory ? `${selectedCategory} Simulations` : "Featured Interactive Simulations"}
+                        </h2>
+                        <p className="text-white/40 mb-6">
+                            {selectedCategory ? `Showing internal topics for ${selectedCategory}` : "Launch straight into our most popular environments."}
+                        </p>
+
+                        {selectedCategory && (
+                            <button
+                                onClick={() => setSelectedCategory(null)}
+                                className="px-4 py-2 rounded-full border border-orange-500/30 text-orange-400 text-xs font-bold hover:bg-orange-500/10 transition-colors uppercase tracking-widest"
+                            >
+                                ← Show All Subjects
+                            </button>
+                        )}
+                    </div>
+
+                    <motion.div
+                        layout
+                        className="grid md:grid-cols-2 lg:grid-cols-4 gap-6"
+                    >
