@@ -295,3 +295,38 @@ export const SimulationEngine: React.FC = () => {
           >
             <div className={`absolute inset-0 bg-gradient-radial ${lab.gradient} pointer-events-none`} />
             {lab.animation}
+            <div className="relative z-10">
+              <span className="text-7xl mb-6 block drop-shadow-lg">{lab.icon}</span>
+              <h2 className={`text-5xl font-black ${lab.accent} mb-4 uppercase tracking-tighter`}>{lab.title}</h2>
+              <p className="text-xl text-white/50 mb-10 max-w-lg mx-auto">{lab.subtitle}</p>
+
+              <motion.button
+                whileHover={{ scale: 1.05 }}
+                whileTap={{ scale: 0.95 }}
+                onClick={() => setInitialized(true)}
+                className="group relative flex items-center gap-4 bg-orange-500 text-black px-12 py-5 rounded-full font-black uppercase tracking-[0.2em] text-sm shadow-[0_0_40px_rgba(249,115,22,0.3)]"
+              >
+                {/* Enhanced ripple effects */}
+                <div className="absolute inset-0 rounded-full bg-white/40 animate-[ping_3s_cubic-bezier(0,0,0.2,1)_infinite]" />
+                <div className="absolute inset-0 rounded-full bg-white/30 animate-[ping_3s_cubic-bezier(0,0,0.2,1)_infinite_1s]" />
+                <div className="absolute inset-0 rounded-full bg-white/20 animate-[ping_3s_cubic-bezier(0,0,0.2,1)_infinite_2s]" />
+                <div className="absolute inset-0 rounded-full bg-white/10 group-hover:bg-white/20 transition-colors" />
+                <span>Initialize Simulation</span>
+                <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={3} d="M13 7l5 5m0 0l-5 5m5-5H6" /></svg>
+              </motion.button>
+            </div>
+          </motion.div>
+        ) : (
+          <motion.div
+            key="simulator"
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            className="absolute inset-0"
+          >
+            {lab.component}
+          </motion.div>
+        )}
+      </AnimatePresence>
+    </div>
+  );
+};
