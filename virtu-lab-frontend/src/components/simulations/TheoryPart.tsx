@@ -1,46 +1,66 @@
 import React from 'react';
 import { useLabStore, LabType } from '../../store/useLabStore';
 
-const theoryData: Record<LabType, { title: string, content: string }> = {
-    pendulum: {
-        title: "Simple Pendulum Experiment",
-        content: "The simple pendulum consists of a small metallic bob suspended by a light, inextensible string from a rigid support. When pulled to one side and released, the bob executes periodic motion. The time period (T) is given by T = 2π√(L/g). This experiment helps us verify the laws of simple pendulum and determine the acceleration due to gravity (g)."
+const theoryData: Record<LabType, { context: string, formula?: string }> = {
+    "ohm-law": {
+        context: "Ohm's Law states that the current through a conductor between two points is directly proportional to the voltage across the two points and inversely proportional to the resistance.",
+        formula: "V = I × R"
     },
-    circuit: {
-        title: "Ohm's Law Verification",
-        content: "Ohm's law states that the current (I) flowing through a conductor is directly proportional to the potential difference (V) across its ends, provided physical conditions remain constant. V = IR, where R is the resistance. In this practical, we build a circuit with a power source, resistor, and ammeter to verify this relationship."
+    "projectile-motion": {
+        context: "Projectile motion is the motion of an object thrown or projected into the air, subject only to acceleration as a result of gravity.",
+        formula: "y = x·tan(θ) - (g·x²) / (2·v²·cos²(θ))"
     },
-    gravity: {
-        title: "Newton's Law of Universal Gravitation",
-        content: "Every particle in the universe attracts every other particle with a force that is directly proportional to the product of their masses and inversely proportional to the square of the distance between their centers. F = G(m1*m2)/r². This sandbox allows you to visualize gravitational attraction and orbital mechanics."
+    "optics-bench": {
+        context: "The lens formula relates the focal length of a lens to the distances of the object and the image from the lens.",
+        formula: "1/f = 1/v - 1/u"
     },
-    titration: {
-        title: "Neutralization Titration",
-        content: "Titration is a technique where a solution of known concentration is used to determine the concentration of an unknown solution. In acid-base titration, we use a pH indicator to find the equivalence point where the moles of acid equal the moles of base. The formula M1V1 = M2V2 is used for calculation."
+    "logic-gates": {
+        context: "Logic gates are the basic building blocks of any digital system. They take one or more binary inputs and produce a single binary output based on a logic rule.",
+        formula: "Y = A · B (AND Gate)"
     },
-    enzyme: {
-        title: "Enzyme Kinetics (Michaelis-Menten)",
-        content: "Enzymes are biological catalysts. The rate of an enzyme-catalyzed reaction depends on substrate concentration, temperature, and pH. The Michaelis-Menten equation describes the rate of enzymatic reactions: v = (Vmax * [S]) / (Km + [S]). In this reactivite lab, we observe how high temperature denatures the enzyme."
+    "titration": {
+        context: "Acid-base titration is a laboratory method used to determine the unknown concentration of an acid or a base by neutralizing it with a known concentration.",
+        formula: "M1V1 = M2V2"
+    },
+    "flame-test": {
+        context: "The flame test is used to detect the presence of certain metal ions based on each element's characteristic emission spectrum.",
+    },
+    "periodic-table": {
+        context: "Periodic trends are specific patterns in the properties of chemical elements that are revealed in the periodic table.",
+    },
+    "reaction-rate": {
+        context: "Chemical kinetics is the study of rates of chemical processes and how various factors like temperature and concentration affect them.",
+        formula: "Rate = k[A]^n[B]^m"
+    },
+    "microscope": {
+        context: "Microscopy is the technical field of using microscopes to view objects and areas of objects that cannot be seen with the naked eye.",
+    },
+    "cell-structure": {
+        context: "Cells are the basic structural, functional, and biological units of all known living organisms.",
+    },
+    "mitosis": {
+        context: "Mitosis is a type of cell division that results in two daughter cells each having the same number and kind of chromosomes as the parent nucleus.",
+    },
+    "anatomy": {
+        context: "Human anatomy is the study of the structure of the human body, from the microscopic to the macroscopic level.",
     }
 };
 
 export const TheoryPart: React.FC = () => {
     const { activeLab } = useLabStore();
-    const data = theoryData[activeLab];
+    const data = theoryData[activeLab] || theoryData["ohm-law"];
 
     return (
         <div className="p-8 max-w-4xl mx-auto text-white/80 leading-relaxed overflow-y-auto max-h-full">
-            <h2 className="text-3xl font-bold mb-6 text-orange-500">{data.title}</h2>
-            <div className="glass-panel p-6 border-white/10 rounded-2xl bg-white/[0.02]">
-                <h3 className="text-xl font-bold mb-4 text-white">Objective</h3>
-                <p className="mb-8 italic underline decoration-orange-500/30 underline-offset-4">To understand and verify the fundamental principles of {activeLab} through virtual experimentation.</p>
-
-                <h3 className="text-xl font-bold mb-4 text-white">Theory</h3>
-                <p>{data.content}</p>
-
-                <div className="mt-8 p-4 bg-orange-500/5 border border-orange-500/20 rounded-xl">
-                    <span className="text-orange-400 font-bold">Note:</span> Use the 'Simulator' tab to perform the experiment after reading the procedure.
-                </div>
+            <h2 className="text-3xl font-bold mb-6 text-orange-500 uppercase tracking-tighter">Theoretical Background</h2>
+            <div className="bg-white/[0.03] border border-white/[0.05] p-8 rounded-[2rem] shadow-xl">
+                <p className="text-lg mb-8 leading-relaxed italic">"{data.context}"</p>
+                {data.formula && (
+                    <div className="mt-10 p-6 bg-orange-500/10 border border-orange-500/20 rounded-2xl text-center">
+                        <span className="text-[10px] uppercase tracking-widest text-orange-400 font-bold block mb-2">Mathematical Principle</span>
+                        <div className="text-3xl font-black text-orange-500 tracking-tight font-mono">{data.formula}</div>
+                    </div>
+                )}
             </div>
         </div>
     );
