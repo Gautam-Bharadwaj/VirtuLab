@@ -160,3 +160,30 @@ function TitrationAnimation() {
     <div className="absolute inset-0 flex items-center justify-center overflow-hidden opacity-20">
       <svg className="w-full h-full" viewBox="0 0 400 300">
         {/* Burette */}
+        <rect x="185" y="20" width="30" height="120" rx="4" fill="none" stroke="#10B981" strokeWidth="1.5" />
+        <motion.rect
+          x="187" y="22" width="26" height="116" rx="3"
+          fill="#10B981"
+          initial={{ scaleY: 1 }}
+          animate={{ scaleY: [1, 0.3, 1] }}
+          transition={{ duration: 6, repeat: Infinity }}
+          style={{ transformOrigin: 'top' }}
+        />
+        {/* Drops */}
+        {[0, 1, 2].map((i) => (
+          <motion.ellipse
+            key={i}
+            cx="200"
+            rx="4"
+            ry="6"
+            fill="#34D399"
+            initial={{ cy: 140, opacity: 1 }}
+            animate={{ cy: 200, opacity: 0 }}
+            transition={{ duration: 1.5, delay: i * 0.8, repeat: Infinity }}
+          />
+        ))}
+        {/* Beaker */}
+        <path d="M 140 200 L 140 270 Q 140 280 150 280 L 250 280 Q 260 280 260 270 L 260 200" fill="none" stroke="#10B981" strokeWidth="1.5" />
+        <motion.rect
+          x="142" y="220" width="116" height="58" rx="2"
+          fill="#10B981"
