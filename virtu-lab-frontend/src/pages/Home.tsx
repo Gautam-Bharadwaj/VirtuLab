@@ -118,3 +118,33 @@ export const Home: React.FC = () => {
                                     <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M12 19l9 2-9-18-9 18 9-2zm0 0v-8" /></svg>
                                 </button>
                             </div>
+                        </div>
+                    </motion.div>
+                )}
+            </AnimatePresence>
+
+            <main>
+                <Hero />
+
+                {/* Explore Labs Section */}
+                <section id="explore-labs" className="relative z-10 py-24 px-6 max-w-7xl mx-auto border-t border-white/5">
+                    <motion.div
+                        initial={{ opacity: 0, y: 40 }}
+                        whileInView={{ opacity: 1, y: 0 }}
+                        transition={{ duration: 0.8 }}
+                        viewport={{ once: true }}
+                        className="text-center mb-20"
+                    >
+                        <h2 className="text-5xl font-black mb-6 text-transparent bg-clip-text bg-gradient-to-r from-orange-400 to-amber-200">
+                            Explore Virtual Labs
+                        </h2>
+                        <p className="text-white/60 max-w-2xl mx-auto text-lg">
+                            Experience science like never before. Dive into our interactive, physically accurate laboratories designed for modern education.
+                        </p>
+                    </motion.div>
+
+                    <div className="grid md:grid-cols-3 gap-8">
+                        {[
+                            { title: 'Physics Engine', subject: 'Physics', desc: 'Experiment with gravity, optics, and thermodynamics in a real-time sandbox environment.', color: 'from-blue-500/20 to-cyan-500/5', image: '/physics_icon.png', hover: 'hover:border-blue-500/50 hover:shadow-[0_0_30px_rgba(56,189,248,0.2)]' },
+                            { title: 'Chemistry Lab', subject: 'Chemistry', desc: 'Mix compounds, observe molecular reactions, and learn stoichiometry safely and interactively.', color: 'from-orange-500/20 to-rose-500/5', image: '/chemistry_icon.png', hover: 'hover:border-orange-500/50 hover:shadow-[0_0_30px_rgba(249,115,22,0.2)]' },
+                            { title: 'Biology Cell', subject: 'Biology', desc: 'Zoom into the microscopic world. Inspect cell structures, DNA, and organic ecosystems.', color: 'from-emerald-500/20 to-teal-500/5', image: '/biology_icon.png', hover: 'hover:border-emerald-500/50 hover:shadow-[0_0_30px_rgba(16,185,129,0.2)]' },
