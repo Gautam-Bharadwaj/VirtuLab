@@ -214,3 +214,30 @@ function EnzymeAnimation() {
         {Array.from({ length: 12 }).map((_, i) => (
           <React.Fragment key={i}>
             <motion.circle
+              cx={200 + Math.sin(i * 0.5) * 60}
+              cy={30 + i * 22}
+              r="5"
+              fill="#A855F7"
+              animate={{
+                cx: [200 + Math.sin(i * 0.5) * 60, 200 + Math.sin(i * 0.5 + Math.PI) * 60, 200 + Math.sin(i * 0.5) * 60],
+              }}
+              transition={{ duration: 4, repeat: Infinity, ease: 'easeInOut' }}
+            />
+            <motion.circle
+              cx={200 + Math.sin(i * 0.5 + Math.PI) * 60}
+              cy={30 + i * 22}
+              r="5"
+              fill="#C084FC"
+              animate={{
+                cx: [200 + Math.sin(i * 0.5 + Math.PI) * 60, 200 + Math.sin(i * 0.5) * 60, 200 + Math.sin(i * 0.5 + Math.PI) * 60],
+              }}
+              transition={{ duration: 4, repeat: Infinity, ease: 'easeInOut' }}
+            />
+            <motion.line
+              x1={200 + Math.sin(i * 0.5) * 60}
+              y1={30 + i * 22}
+              x2={200 + Math.sin(i * 0.5 + Math.PI) * 60}
+              y2={30 + i * 22}
+              stroke="#7C3AED"
+              strokeWidth="1"
+              animate={{ opacity: [0.2, 0.6, 0.2] }}
