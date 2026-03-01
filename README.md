@@ -264,7 +264,7 @@ sequenceDiagram
 ## 12. Demo & Video
 
 - **Live Demo Link:** [virtu-lab-sage.vercel.app](https://virtu-lab-sage.vercel.app/)
-- **Demo Video Link:** [Google Drive Video](https://drive.google.com/file/d/1WVGDHDW2Dqyi93VpKWGE0cIJVBEU9VyA/view)
+- **Demo Video Link:** [Google Drive Video](https://drive.google.com/file/d/16iIwTtYKf7DmPFl70kwOE_baWnydnwc6/view?usp=drive_link)
 - **GitHub Repository:** [VirtuLab GitHub](https://github.com/Gautam-Bharadwaj/VirtuLab)
 
 ---
