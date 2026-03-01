@@ -268,3 +268,42 @@ export const Home: React.FC = () => {
                                             <div>
                                                 <h4 className="text-white font-medium mb-1">{doc.title}</h4>
                                                 <p className="text-xs text-white/40">{doc.size}</p>
+                                            </div>
+                                        </div>
+                                        <div className="w-10 h-10 rounded-full border border-white/10 flex items-center justify-center text-white/50 group-hover:text-orange-500 group-hover:border-orange-500/50 transition-colors">
+                                            <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4" /></svg>
+                                        </div>
+                                    </div>
+                                ))}
+                            </div>
+                        </div>
+
+                        <div className="w-full md:w-1/2 relative">
+                            {/* Decorative graphical background for Resources */}
+                            <div className="absolute inset-0 bg-gradient-to-tr from-orange-500/20 to-amber-500/5 rounded-3xl blur-2xl transform rotate-3"></div>
+                            <div className="relative bg-[#111] border border-white/10 rounded-[2rem] p-8 aspect-square flex flex-col items-center justify-center overflow-hidden">
+                                <div className="absolute top-0 w-full h-1/2 bg-gradient-to-b from-white/5 to-transparent"></div>
+
+                                <motion.div
+                                    animate={{ y: [0, -10, 0] }}
+                                    transition={{ repeat: Infinity, duration: 4, ease: "easeInOut" }}
+                                    className="text-8xl mb-8 filter drop-shadow-[0_0_30px_rgba(249,115,22,0.4)]"
+                                >
+                                    📚
+                                </motion.div>
+                                <h3 className="text-2xl font-bold text-white mb-2 text-center">Global Library</h3>
+                                <p className="text-white/50 text-center text-sm max-w-xs">Access over 500+ documents, experiment theories, and mathematical proofs directly.</p>
+
+                                <button className="mt-8 px-8 py-3 bg-white/10 hover:bg-white/20 text-white rounded-full font-medium transition-colors border border-white/10">Browse Library</button>
+                            </div>
+                        </div>
+                    </div>
+                </section>
+            </main>
+
+            <footer className="relative z-10 py-12 px-6 border-t border-white/5 text-center text-white/20 text-xs">
+                © 2026 VirtuLab Inc. All rights reserved. Built for the future of science.
+            </footer>
+        </div>
+    );
+};
