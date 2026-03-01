@@ -268,3 +268,30 @@ function EnzymeAnimation() {
   );
 }
 
+export const SimulationEngine: React.FC = () => {
+  const { activeLab, activeTab } = useLabStore();
+  const [initialized, setInitialized] = useState(false);
+  const lab = labDescriptions[activeLab] || labDescriptions['circuit']; // Fallback to circuit
+
+  // Reset initialization when switching labs
+  React.useEffect(() => {
+    setInitialized(false);
+  }, [activeLab]);
+
+  if (activeTab === 'theory') return <TheoryPart />;
+  if (activeTab === 'procedure') return <ProcedurePart />;
+  if (activeTab === 'resources') return <ResourcesPart />;
+
+  return (
+    <div id="simulation-container" className="relative w-full h-full rounded-2xl overflow-hidden">
+      <AnimatePresence mode="wait">
+        {!initialized ? (
+          <motion.div
+            key="landing"
+            initial={{ opacity: 0, scale: 0.98 }}
+            animate={{ opacity: 1, scale: 1 }}
+            exit={{ opacity: 0, scale: 1.05 }}
+            className="absolute inset-0 glass-panel rounded-2xl flex flex-col items-center justify-center p-8 text-center"
+          >
+            <div className={`absolute inset-0 bg-gradient-radial ${lab.gradient} pointer-events-none`} />
+            {lab.animation}
