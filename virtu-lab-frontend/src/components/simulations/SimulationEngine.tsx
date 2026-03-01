@@ -79,3 +79,30 @@ function PendulumAnimation() {
 
 function GravityAnimation() {
   return (
+    <div className="absolute inset-0 flex items-center justify-center overflow-hidden opacity-20">
+      <svg className="w-full h-full" viewBox="0 0 400 300">
+        <circle cx="200" cy="150" r="30" fill="#FB7185" />
+        <motion.g
+          animate={{ rotate: 360 }}
+          transition={{ duration: 8, repeat: Infinity, ease: "linear" }}
+          style={{ transformOrigin: '200px 150px' }}
+        >
+          <circle cx="320" cy="150" r="10" fill="#F43F5E" />
+          <ellipse cx="200" cy="150" rx="120" ry="60" fill="none" stroke="#FDA4AF" strokeWidth="1" strokeDasharray="5 5" />
+        </motion.g>
+        <motion.g
+          animate={{ rotate: -360 }}
+          transition={{ duration: 12, repeat: Infinity, ease: "linear" }}
+          style={{ transformOrigin: '200px 150px' }}
+        >
+          <circle cx="270" cy="150" r="6" fill="#E11D48" />
+          <ellipse cx="200" cy="150" rx="70" ry="35" fill="none" stroke="#FDA4AF" strokeWidth="0.5" strokeDasharray="3 3" />
+        </motion.g>
+      </svg>
+    </div>
+  );
+}
+
+function CircuitAnimation() {
+  return (
+    <div className="absolute inset-0 flex items-center justify-center overflow-hidden opacity-20">
