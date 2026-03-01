@@ -52,3 +52,30 @@ const labDescriptions: Record<string, any> = {
     subtitle: 'Planetary orbits & attraction',
     gradient: 'from-rose-500/20 via-red-500/10 to-transparent',
     accent: 'text-rose-400',
+    icon: '🪐',
+    component: <GravitySim />,
+    animation: <GravityAnimation />,
+  },
+};
+
+function PendulumAnimation() {
+  return (
+    <div className="absolute inset-0 flex items-center justify-center overflow-hidden opacity-20">
+      <svg className="w-full h-full" viewBox="0 0 400 300">
+        <motion.g
+          animate={{ rotate: [-45, 45, -45] }}
+          transition={{ duration: 2.5, repeat: Infinity, ease: "easeInOut" }}
+          style={{ transformOrigin: '200px 50px' }}
+        >
+          <line x1="200" y1="50" x2="200" y2="220" stroke="#60A5FA" strokeWidth="2" />
+          <circle cx="200" cy="220" r="15" fill="#3B82F6" />
+          <circle cx="200" cy="220" r="8" fill="#93C5FD" opacity="0.5" />
+        </motion.g>
+        <line x1="150" y1="50" x2="250" y2="50" stroke="#60A5FA" strokeWidth="4" strokeLinecap="round" />
+      </svg>
+    </div>
+  );
+}
+
+function GravityAnimation() {
+  return (
