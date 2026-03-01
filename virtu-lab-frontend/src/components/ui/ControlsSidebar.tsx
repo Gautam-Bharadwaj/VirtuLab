@@ -26,12 +26,23 @@ const sliderDefs: Record<LabType, SliderDef[]> = {
     { inputKey: 'temperature', label: 'Temperature', min: 0, max: 100, step: 1, unit: '°C', icon: '🌡️' },
     { inputKey: 'substrateConcentration', label: 'Substrate Conc.', min: 0, max: 20, step: 0.5, unit: 'mmol/L', icon: '🧬' },
   ],
+  pendulum: [
+    { inputKey: 'length', label: 'String Length', min: 0.5, max: 5, step: 0.1, unit: 'm', icon: '📏' },
+    { inputKey: 'gravity', label: 'Gravity', min: 1, max: 25, step: 0.1, unit: 'm/s²', icon: '🌍' },
+    { inputKey: 'angle', label: 'Start Angle', min: 5, max: 90, step: 1, unit: '°', icon: '📐' },
+  ],
+  gravity: [
+    { inputKey: 'planetMass', label: 'Planet Mass', min: 50, max: 500, step: 10, unit: 'Me', icon: '🌑' },
+    { inputKey: 'objectDistance', label: 'Distance', min: 20, max: 200, step: 5, unit: 'km', icon: '📏' },
+  ],
 };
 
 const labMeta: Record<LabType, { title: string; icon: string; desc: string; accent: string }> = {
   circuit: { title: 'Circuit Forge', icon: '⚡', desc: 'Configure circuit parameters', accent: 'from-amber-500/30 to-orange-600/30' },
   titration: { title: 'Titration Bench', icon: '🧪', desc: 'Set titration volumes', accent: 'from-emerald-500/30 to-teal-600/30' },
-  enzyme: { title: 'Enzyme Reactor', icon: '🧬', desc: 'Adjust reaction conditions', accent: 'from-purple-500/30 to-violet-600/30' },
+  enzyme: { title: 'Microscope Cell View', icon: '🧬', desc: 'Adjust reaction conditions', accent: 'from-purple-500/30 to-violet-600/30' },
+  pendulum: { title: 'Pendulum Motion', icon: '⏱️', desc: 'Study harmonic motion parameters', accent: 'from-blue-500/30 to-cyan-600/30' },
+  gravity: { title: 'Gravity Sandbox', icon: '🪐', desc: 'Configure orbital mechanics', accent: 'from-rose-500/30 to-red-600/30' },
 };
 
 /* ─── Logarithmic helpers ─── */
@@ -322,6 +333,30 @@ export const ControlsSidebar: React.FC = () => {
         </motion.button>
       </div>
 
+      {/* ── Simulation Catalog (Quick Switch) ── */}
+      <div className="glass-panel rounded-2xl p-4">
+        <h3 className="text-[10px] font-semibold text-white/30 uppercase tracking-widest mb-3">Simulation Catalog</h3>
+        <div className="grid grid-cols-2 gap-2">
+          {(Object.keys(labMeta) as LabType[]).map((key) => (
+            <button
+              key={key}
+              onClick={() => {
+                (useLabStore.getState() as any).setActiveLab(key);
+              }}
+              className={`p-2 rounded-xl border transition-all text-left group ${activeLab === key
+                ? 'bg-orange-500/10 border-orange-500/40'
+                : 'bg-white/[0.02] border-white/[0.05] hover:bg-white/[0.06] hover:border-white/[0.1]'
+                }`}
+            >
+              <div className="text-lg mb-1">{labMeta[key].icon}</div>
+              <div className={`text-[9px] font-bold uppercase truncate ${activeLab === key ? 'text-orange-400' : 'text-white/40 group-hover:text-white/60'}`}>
+                {labMeta[key].title.split(' ')[0]}
+              </div>
+            </button>
+          ))}
+        </div>
+      </div>
+
       {/* ── Quick Tips ── */}
       <div className="glass-panel rounded-2xl p-4">
         <h3 className="text-[10px] font-semibold text-white/30 uppercase tracking-widest mb-2">Quick Tips</h3>
@@ -336,7 +371,7 @@ export const ControlsSidebar: React.FC = () => {
           </li>
           <li className="flex items-start gap-2">
             <span className="text-blue-400/60 mt-px">›</span>
-            Upload a hand-drawn circuit to auto-simulate
+            Simulation switch is now here in the sidebar
           </li>
         </ul>
       </div>
