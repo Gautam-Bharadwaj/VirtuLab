@@ -1,10 +1,8 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { motion } from 'framer-motion';
-import { useNavigate } from 'react-router-dom';
 import { Sparkles, MoveRight, BookX, Eye } from 'lucide-react';
 
 export const Hero: React.FC = () => {
-    const navigate = useNavigate();
     const [frame, setFrame] = useState(1);
     const [imagesLoaded, setImagesLoaded] = useState(false);
     const [isVisible, setIsVisible] = useState(true);
@@ -138,16 +136,16 @@ export const Hero: React.FC = () => {
 
                     <div className="flex flex-wrap items-center gap-5 mt-4">
                         <button
-                            onClick={() => navigate('/lab')}
+                            onClick={() => document.getElementById('explore-labs')?.scrollIntoView({ behavior: 'smooth' })}
                             className="group relative px-8 py-4 rounded-2xl bg-orange-500 text-white font-bold flex items-center gap-2 overflow-hidden shadow-[0_20px_40px_rgba(249,115,22,0.2)] transition-all duration-300 active:scale-95"
                         >
                             <div className="absolute inset-0 bg-white/20 translate-y-full group-hover:translate-y-0 transition-transform duration-300" />
-                            <span className="relative z-10 font-black tracking-tight uppercase text-sm">Launch Laboratory</span>
+                            <span className="relative z-10 font-black tracking-tight uppercase text-sm">Get Started</span>
                             <MoveRight className="relative z-10 group-hover:translate-x-1 transition-transform" />
                         </button>
 
                         <a
-                            href="#explore-labs"
+                            href="#simulations"
                             className="px-8 py-4 rounded-2xl bg-white/5 border border-white/10 text-white font-bold hover:bg-white/10 transition-all uppercase text-sm tracking-tight shadow-[0_0_15px_rgba(255,255,255,0.05)]"
                         >
                             Explore Labs

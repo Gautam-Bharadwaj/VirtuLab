@@ -1,7 +1,6 @@
 import React, { ReactNode } from 'react';
 import { useLabStore } from '../../store/useLabStore';
 import { Navbar } from './Navbar';
-import { BottomBar } from './BottomBar';
 import SkillRadar from './SkillRadar';
 import { ChallengePanel } from './ChallengePanel';
 import { LabReport } from './LabReport';
@@ -70,10 +69,10 @@ export const LabShell: React.FC<LabShellProps> = ({ children, sidebar, tutor }) 
 
         <main
           id="simulation-container"
-          className={`flex-1 min-w-0 p-4 pb-24 overflow-hidden h-full flex flex-col transition-[margin] duration-300 ${tutorOpen ? 'mr-[320px]' : 'mr-0'}`}
+          className={`flex-1 min-w-0 p-4 overflow-hidden h-full flex flex-col transition-[margin] duration-300 ${tutorOpen ? 'mr-[320px]' : 'mr-0'}`}
         >
           <div className="flex-shrink-0 flex items-center gap-1 p-1 bg-white/[0.03] border border-white/[0.08] rounded-2xl mb-4 w-fit self-center z-10">
-            {(["theory", "procedure", "simulator", "resources"] as const).map((tab) => {
+            {(["theory", "procedure", "simulator"] as const).map((tab) => {
               const { activeTab, setActiveTab } = (useLabStore as any)();
               return (
                 <button
@@ -115,7 +114,6 @@ export const LabShell: React.FC<LabShellProps> = ({ children, sidebar, tutor }) 
         )}
       </div>
 
-      <BottomBar />
 
       <div className="fixed inset-0 pointer-events-none z-0">
         <div className="absolute top-0 left-1/4 w-96 h-96 bg-blue-600/[0.04] rounded-full blur-[100px]" />
