@@ -68,15 +68,24 @@ export const ChallengePanel: React.FC = () => {
         }
     }, [running, challengeActive, challengeData, currentValue, challengeAttempts, completeChallenge]);
 
+    const [error, setError] = useState<string | null>(null);
     const loadChallenge = useCallback(async () => {
         setLoading(true);
-        const challenges = await loadChallenges();
-        const labChallenges = challenges[activeLab];
-        if (labChallenges && labChallenges.length > 0) {
-            const randomIdx = Math.floor(Math.random() * labChallenges.length);
-            startChallenge(labChallenges[randomIdx]);
+        setError(null);
+        try {
+            const challenges = await loadChallenges();
+            const labChallenges = challenges[activeLab];
+            if (labChallenges && labChallenges.length > 0) {
+                const randomIdx = Math.floor(Math.random() * labChallenges.length);
+                startChallenge(labChallenges[randomIdx]);
+            } else {
+                setError(`No AI challenges available for ${activeLab.replace('-', ' ')} lab yet.`);
+            }
+        } catch {
+            setError('Failed to connect to the challenge server.');
+        } finally {
+            setLoading(false);
         }
-        setLoading(false);
     }, [activeLab, startChallenge]);
 
     const handleCheck = useCallback(() => {
@@ -109,6 +118,18 @@ export const ChallengePanel: React.FC = () => {
                 <p className="text-xs text-white/40 text-center leading-relaxed mb-6">
                     Ready for a challenge? The AI will set a specific target — can you find the right parameters?
                 </p>
+
+                {error && (
+                    <motion.div
+                        initial={{ opacity: 0, height: 0 }}
+                        animate={{ opacity: 1, height: 'auto' }}
+                        className="w-full bg-rose-500/10 border border-rose-500/20 rounded-xl p-3 mb-6"
+                    >
+                        <p className="text-[10px] text-rose-400 font-bold text-center uppercase tracking-wider leading-relaxed">
+                            {error}
+                        </p>
+                    </motion.div>
+                )}
 
                 <motion.button
                     whileHover={{ scale: 1.04 }}
