@@ -238,3 +238,33 @@ export const Home: React.FC = () => {
                                                     <svg className="w-4 h-4 ml-0.5" fill="currentColor" viewBox="0 0 24 24"><path d="M8 5v14l11-7z" /></svg>
                                                 </div>
                                                 <span className="text-xs font-semibold text-white">Start Simulation</span>
+                                            </div>
+                                        </div>
+                                    </motion.div>
+                                </Link>
+                            ))}
+                        </AnimatePresence>
+                    </motion.div>
+                </section>
+
+                {/* Resources Section */}
+                <section id="resources" className="relative z-10 py-24 px-6 max-w-7xl mx-auto border-t border-white/5">
+                    <div className="flex flex-col md:flex-row gap-12 items-center">
+                        <div className="w-full md:w-1/2">
+                            <h2 className="text-4xl font-bold mb-6 text-white leading-tight">Comprehensive<br /><span className="text-orange-500">Resources & Guides</span></h2>
+                            <p className="text-white/50 mb-8 max-w-md text-lg">
+                                Whether you're a teacher preparing the next curriculum or a student looking for experiment theory, we have everything perfectly documented.
+                            </p>
+
+                            <div className="flex flex-col gap-4">
+                                {[
+                                    { title: 'Student Lab Manual', icon: '📓', size: '2.4 MB PDF' },
+                                    { title: 'Teacher Setup Guide', icon: '📋', size: '1.8 MB PDF' },
+                                    { title: 'Safety Protocols', icon: '⚠️', size: '0.9 MB PDF' }
+                                ].map((doc, i) => (
+                                    <div key={i} className="flex items-center justify-between p-4 rounded-2xl bg-white/5 border border-white/5 hover:bg-white/10 hover:border-white/20 transition-colors cursor-pointer group">
+                                        <div className="flex items-center gap-4">
+                                            <div className="text-2xl">{doc.icon}</div>
+                                            <div>
+                                                <h4 className="text-white font-medium mb-1">{doc.title}</h4>
+                                                <p className="text-xs text-white/40">{doc.size}</p>
