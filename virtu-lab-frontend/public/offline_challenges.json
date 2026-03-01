@@ -1,0 +1,324 @@
+{
+    "ohm-law": [
+        {
+            "id": "ohm-1",
+            "title": "Precision Resistance",
+            "description": "Find the resistance that gives exactly 30mA current when voltage is fixed at 6V.",
+            "fixedParams": {
+                "voltage": 6
+            },
+            "targetKey": "current",
+            "targetValue": 30,
+            "targetUnit": "mA",
+            "tolerance": 5,
+            "compute": "((inputs.voltage ?? 6) / (inputs.resistance ?? 100)) * 1000",
+            "hint": "Use Ohm's Law: I = V/R. If I = 30mA and V = 6V, then R = V/I = 6/0.03 = 200 ohms.",
+            "proof": "I = V / R = 6V / 200\u03A9 = 0.03A = 30mA. The relationship is inverse — doubling resistance halves current."
+        },
+        {
+            "id": "ohm-2",
+            "title": "Power Budget",
+            "description": "Keep power dissipation below 0.5W while maintaining at least 10mA current.",
+            "fixedParams": {},
+            "targetKey": "power_under",
+            "targetValue": 0.5,
+            "targetUnit": "W",
+            "tolerance": 5,
+            "compute": "(inputs.voltage ?? 5) * ((inputs.voltage ?? 5) / (inputs.resistance ?? 100))",
+            "hint": "Power P = V\u00B2/R. To reduce power, you can either lower voltage or increase resistance. But current I = V/R must stay above 10mA.",
+            "proof": "P = V\u00B2/R. For V=5V, R=100\u03A9: P = 25/100 = 0.25W < 0.5W, and I = 5/100 = 50mA > 10mA. Both conditions met."
+        },
+        {
+            "id": "ohm-3",
+            "title": "Exact Current",
+            "description": "Achieve exactly 50mA current using any voltage and resistance combination.",
+            "fixedParams": {},
+            "targetKey": "current",
+            "targetValue": 50,
+            "targetUnit": "mA",
+            "tolerance": 5,
+            "compute": "((inputs.voltage ?? 5) / (inputs.resistance ?? 100)) * 1000",
+            "hint": "I = V/R. You need V/R = 0.05. So if V = 5V, R must be 100\u03A9. If V = 10V, R must be 200\u03A9.",
+            "proof": "Any pair where V/R = 0.05A works. Examples: 5V/100\u03A9, 10V/200\u03A9, 2.5V/50\u03A9. The ratio is what matters."
+        }
+    ],
+    "projectile-motion": [
+        {
+            "id": "proj-1",
+            "title": "Precision Landing",
+            "description": "Land the projectile at exactly 30 metres using any angle and velocity.",
+            "fixedParams": {},
+            "targetKey": "range",
+            "targetValue": 30,
+            "targetUnit": "m",
+            "tolerance": 5,
+            "compute": "((inputs.velocity ?? 20) ** 2 * Math.sin(2 * (inputs.angle ?? 45) * Math.PI / 180)) / 9.81",
+            "hint": "Range R = v\u00B2sin(2\u03B8)/g. At 45\u00B0, sin(90\u00B0)=1 so R = v\u00B2/9.81. Solve for v: v = \u221A(30 * 9.81) \u2248 17.2 m/s.",
+            "proof": "R = v\u00B2sin(2\u03B8)/g. With v=17.15m/s at 45\u00B0: R = (17.15)\u00B2 \u00D7 1 / 9.81 = 294.3/9.81 = 30.0m."
+        },
+        {
+            "id": "proj-2",
+            "title": "Twin Angles",
+            "description": "Find TWO different angles that give the same range of 25 metres at velocity 20 m/s.",
+            "fixedParams": {
+                "velocity": 20
+            },
+            "targetKey": "range",
+            "targetValue": 25,
+            "targetUnit": "m",
+            "tolerance": 5,
+            "compute": "((inputs.velocity ?? 20) ** 2 * Math.sin(2 * (inputs.angle ?? 45) * Math.PI / 180)) / 9.81",
+            "hint": "Complementary angles (\u03B8 and 90\u00B0-\u03B8) always give the same range! If one angle works, try 90 minus that angle.",
+            "proof": "sin(2\u03B8) = sin(2(90\u00B0-\u03B8)) = sin(180\u00B0-2\u03B8) = sin(2\u03B8). So angles \u03B8 and (90\u00B0-\u03B8) produce identical ranges."
+        },
+        {
+            "id": "proj-3",
+            "title": "Maximum Height",
+            "description": "Make the projectile reach exactly 15 metres maximum height.",
+            "fixedParams": {},
+            "targetKey": "maxHeight",
+            "targetValue": 15,
+            "targetUnit": "m",
+            "tolerance": 5,
+            "compute": "((inputs.velocity ?? 20) ** 2 * Math.sin((inputs.angle ?? 45) * Math.PI / 180) ** 2) / (2 * 9.81)",
+            "hint": "Max height H = v\u00B2sin\u00B2(\u03B8)/(2g). At 90\u00B0, H = v\u00B2/(2g). Solve for v: v = \u221A(2gH) = \u221A(2\u00D79.81\u00D715) \u2248 17.2 m/s.",
+            "proof": "H = v\u00B2sin\u00B2\u03B8/(2g). With v=17.15 at 90\u00B0: H = 294.3\u00D71/(19.62) = 15.0m. At lower angles, increase velocity."
+        }
+    ],
+    "titration": [
+        {
+            "id": "titr-1",
+            "title": "Perfect Neutral",
+            "description": "Stop the titration at exactly pH 7.0 (neutral point).",
+            "fixedParams": {},
+            "targetKey": "ph",
+            "targetValue": 7,
+            "targetUnit": "pH",
+            "tolerance": 5,
+            "compute": "(() => { const vol = inputs.baseVolume ?? 0; const nv = 25; if (vol < nv) { const h = (0.1 * (nv - vol)) / (25 + vol); return h > 0 ? -Math.log10(h) : 7; } if (vol === nv) return 7; const oh = (0.1 * (vol - nv)) / (25 + vol); return oh > 0 ? 14 + Math.log10(oh) : 7; })()",
+            "hint": "At the equivalence point, moles of acid = moles of base. With 0.1M HCl and 0.1M NaOH in 25mL acid, you need exactly 25mL of base.",
+            "proof": "Moles HCl = 0.1 \u00D7 0.025 = 0.0025 mol. Moles NaOH needed = 0.0025 mol. Volume = 0.0025/0.1 = 0.025L = 25mL exactly."
+        },
+        {
+            "id": "titr-2",
+            "title": "Buffer Zone",
+            "description": "Reach pH 4.5 without overshooting past pH 5.0.",
+            "fixedParams": {},
+            "targetKey": "ph",
+            "targetValue": 4.5,
+            "targetUnit": "pH",
+            "tolerance": 8,
+            "compute": "(() => { const vol = inputs.baseVolume ?? 0; const nv = 25; if (vol < nv) { const h = (0.1 * (nv - vol)) / (25 + vol); return h > 0 ? -Math.log10(h) : 7; } if (vol === nv) return 7; const oh = (0.1 * (vol - nv)) / (25 + vol); return oh > 0 ? 14 + Math.log10(oh) : 7; })()",
+            "hint": "In the buffer region (before equivalence), pH changes slowly. Use small increments of base near pH 4-5. Around 20mL should give pH ~4.5.",
+            "proof": "At 20mL: [H+] = (0.1\u00D75)/(45) = 0.011M, pH = -log(0.011) = 1.96. Actually around 22-23mL for pH 4.5 due to the titration curve shape."
+        },
+        {
+            "id": "titr-3",
+            "title": "Indicator Sweet Spot",
+            "description": "Find the volume where pH changes fastest (steepest curve slope).",
+            "fixedParams": {},
+            "targetKey": "ph",
+            "targetValue": 7,
+            "targetUnit": "pH",
+            "tolerance": 10,
+            "compute": "(() => { const vol = inputs.baseVolume ?? 0; const nv = 25; if (vol < nv) { const h = (0.1 * (nv - vol)) / (25 + vol); return h > 0 ? -Math.log10(h) : 7; } if (vol === nv) return 7; const oh = (0.1 * (vol - nv)) / (25 + vol); return oh > 0 ? 14 + Math.log10(oh) : 7; })()",
+            "hint": "The steepest part of the pH curve is at the equivalence point — exactly 25mL for equal concentrations.",
+            "proof": "Near 25mL, a single drop (0.05mL) changes pH from ~4 to ~10. This is the steepest region — the inflection point of the S-curve."
+        }
+    ],
+    "optics-bench": [
+        {
+            "id": "opt-1",
+            "title": "Same Size Image",
+            "description": "Make the image form at exactly the same size as the object (magnification = 1).",
+            "fixedParams": {},
+            "targetKey": "imageDistance",
+            "targetValue": 60,
+            "targetUnit": "cm",
+            "tolerance": 5,
+            "compute": "((inputs.objectDistance ?? 30) * (inputs.focalLength ?? 15)) / ((inputs.objectDistance ?? 30) - (inputs.focalLength ?? 15))",
+            "hint": "Magnification = 1 when image distance = object distance. This happens when object is at 2F (twice the focal length).",
+            "proof": "When u = 2f: v = (2f \u00D7 f)/(2f - f) = 2f\u00B2/f = 2f. So v = u, magnification m = v/u = 1. Place object at 2F."
+        },
+        {
+            "id": "opt-2",
+            "title": "Double Magnification",
+            "description": "Make the image form at twice the object distance (magnification = 2).",
+            "fixedParams": {
+                "focalLength": 15
+            },
+            "targetKey": "imageDistance",
+            "targetValue": 45,
+            "targetUnit": "cm",
+            "tolerance": 5,
+            "compute": "((inputs.objectDistance ?? 30) * (inputs.focalLength ?? 15)) / ((inputs.objectDistance ?? 30) - (inputs.focalLength ?? 15))",
+            "hint": "For m=2, we need v = 2u. Using 1/v - 1/u = 1/f, and v=2u: 1/(2u) - 1/u = 1/f. Solve for u.",
+            "proof": "1/(2u) + 1/u = 1/f \u2192 3/(2u) = 1/f \u2192 u = 3f/2. For f=15cm: u = 22.5cm, v = 45cm."
+        },
+        {
+            "id": "opt-3",
+            "title": "Virtual Image",
+            "description": "Place the object so the image becomes virtual (behind the lens).",
+            "fixedParams": {
+                "focalLength": 20
+            },
+            "targetKey": "imageDistance",
+            "targetValue": -60,
+            "targetUnit": "cm",
+            "tolerance": 10,
+            "compute": "((inputs.objectDistance ?? 30) * (inputs.focalLength ?? 20)) / ((inputs.objectDistance ?? 30) - (inputs.focalLength ?? 20))",
+            "hint": "A virtual image forms when the object is between the lens and its focal point (u < f). Try placing object at less than 20cm.",
+            "proof": "When u < f, (u-f) is negative, making v negative (virtual). At u=15cm, f=20cm: v = 15\u00D720/(15-20) = 300/(-5) = -60cm."
+        }
+    ],
+    "reaction-rate": [
+        {
+            "id": "rate-1",
+            "title": "Rate Control",
+            "description": "Achieve a reaction rate of exactly 4.0 arbitrary units.",
+            "fixedParams": {},
+            "targetKey": "rate",
+            "targetValue": 4,
+            "targetUnit": "units",
+            "tolerance": 10,
+            "compute": "(inputs.concentration ?? 1) * Math.exp(((inputs.temperature ?? 25) - 25) / 10) * 2",
+            "hint": "Rate = C * e^((T-25)/10) * 2. At C=1M and T=25°C, rate = 2. To get 4, you can double concentration or raise temp by ~7°C.",
+            "proof": "Rate = 2 * C * e^((T-25)/10). For rate=4: at C=2M,T=25°C: 2*2*1=4. Or C=1M,T=32°C: 2*1*e^0.7≈4.03."
+        },
+        {
+            "id": "rate-2",
+            "title": "Temperature Mastery",
+            "description": "Find the temperature that doubles the reaction rate compared to room temperature (25°C) at 1M concentration.",
+            "fixedParams": {
+                "concentration": 1
+            },
+            "targetKey": "rate",
+            "targetValue": 4,
+            "targetUnit": "units",
+            "tolerance": 10,
+            "compute": "(inputs.concentration ?? 1) * Math.exp(((inputs.temperature ?? 25) - 25) / 10) * 2",
+            "hint": "The van 't Hoff rule says rate roughly doubles for every 10°C rise. Base rate at 25°C is 2, so you need rate = 4.",
+            "proof": "Rate = 2e^((T-25)/10). For rate=4: e^((T-25)/10) = 2, so (T-25)/10 = ln(2) ≈ 0.693, T = 25 + 6.93 ≈ 32°C."
+        },
+        {
+            "id": "rate-3",
+            "title": "Concentration Effect",
+            "description": "Find the concentration that gives rate = 10 units at 35°C.",
+            "fixedParams": {
+                "temperature": 35
+            },
+            "targetKey": "rate",
+            "targetValue": 10,
+            "targetUnit": "units",
+            "tolerance": 10,
+            "compute": "(inputs.concentration ?? 1) * Math.exp(((inputs.temperature ?? 35) - 25) / 10) * 2",
+            "hint": "At 35°C, the temperature factor is e^1 ≈ 2.718. So rate = C * 2.718 * 2 = 5.44C. For rate=10, C = 10/5.44 ≈ 1.84M.",
+            "proof": "Rate = 2C * e^((35-25)/10) = 2C * e = 5.436C. For rate=10: C = 10/5.436 = 1.84M."
+        }
+    ],
+    "logic-gates": [
+        {
+            "id": "logic-1",
+            "title": "Universal NAND",
+            "description": "Select the NAND gate which is known as a universal gate.",
+            "fixedParams": {},
+            "targetKey": "gateType",
+            "targetValue": 4,
+            "targetUnit": "Type",
+            "tolerance": 0,
+            "compute": "inputs.gateType",
+            "hint": "Gate types are: 1:AND, 2:OR, 3:NOT, 4:NAND, 5:NOR.",
+            "proof": "NAND and NOR are universal gates. In our simulator, NAND is index 4."
+        }
+    ],
+    "flame-test": [
+        {
+            "id": "flame-1",
+            "title": "Copper Identification",
+            "description": "Find the element that produces a characteristic blue-green flame.",
+            "fixedParams": {},
+            "targetKey": "elementIdx",
+            "targetValue": 3,
+            "targetUnit": "Index",
+            "tolerance": 0,
+            "compute": "inputs.elementIdx",
+            "hint": "Copper (Cu) salts typically give a beautiful blue-green flame.",
+            "proof": "The characteristic emission spectrum of Copper ions results in a blue-green color in a Bunsen flame."
+        }
+    ],
+    "periodic-table": [
+        {
+            "id": "periodic-1",
+            "title": "Atomic Number 11",
+            "description": "Find the element Sodium (Na) by its atomic number.",
+            "fixedParams": {},
+            "targetKey": "elementIdx",
+            "targetValue": 11,
+            "targetUnit": "AN",
+            "tolerance": 0,
+            "compute": "inputs.elementIdx",
+            "hint": "Sodium is an alkali metal in Group 1, Period 3. Its atomic number is 11.",
+            "proof": "Sodium (Na) has 11 protons, giving it the atomic number 11."
+        }
+    ],
+    "microscope": [
+        {
+            "id": "micro-1",
+            "title": "High Resolution",
+            "description": "Set the microscope to 40x objective lens for detailed cell observation.",
+            "fixedParams": {},
+            "targetKey": "magnification",
+            "targetValue": 40,
+            "targetUnit": "x",
+            "tolerance": 0,
+            "compute": "inputs.magnification",
+            "hint": "Slide the objective selector to 40x.",
+            "proof": "40x magnification is common for observing plant cells like onion peel."
+        }
+    ],
+    "cell-structure": [
+        {
+            "id": "cell-1",
+            "title": "Digital Zoom",
+            "description": "Zoom in to exactly 8.0x to examine the nucleus detail.",
+            "fixedParams": {},
+            "targetKey": "zoom",
+            "targetValue": 8,
+            "targetUnit": "x",
+            "tolerance": 5,
+            "compute": "inputs.zoom",
+            "hint": "Use the zoom slider to reach the 8.0x mark.",
+            "proof": "High zoom allows better visualization of larger organelles like the nucleus."
+        }
+    ],
+    "mitosis": [
+        {
+            "id": "mitosis-1",
+            "title": "Metaphase Alignment",
+            "description": "Find the time step where chromosomes align at the equator (around 40%).",
+            "fixedParams": {},
+            "targetKey": "stage",
+            "targetValue": 40,
+            "targetUnit": "%",
+            "tolerance": 10,
+            "compute": "inputs.stage",
+            "hint": "Metaphase occurs after Prophase. Look for alignment in the center.",
+            "proof": "During Metaphase, spindle fibers align chromosomes along the metaphase plate."
+        }
+    ],
+    "anatomy": [
+        {
+            "id": "anatomy-1",
+            "title": "Lateral View",
+            "description": "Rotate the model to 90 degrees to see the lateral aspect.",
+            "fixedParams": {},
+            "targetKey": "rotate",
+            "targetValue": 90,
+            "targetUnit": "°",
+            "tolerance": 5,
+            "compute": "inputs.rotate",
+            "hint": "Slide the orientation slider to 90.",
+            "proof": "A 90-degree rotation provides a side (lateral) view of the anatomical model."
+        }
+    ]
+}
