@@ -43,12 +43,10 @@ export const BottomBar: React.FC = () => {
                     className={`flex-1 glass-panel rounded-xl p-3 flex items-center gap-3 hover:bg-white/[0.06] transition-all duration-200 cursor-default group ${stat.trend ? trendColors[stat.trend] : ''
                         }`}
                 >
-                    {/* Icon */}
                     <div className="w-10 h-10 rounded-lg bg-gradient-to-br from-white/[0.06] to-white/[0.02] flex items-center justify-center text-lg shrink-0 group-hover:scale-110 transition-transform">
-                        {stat.icon}
+                        <img src={stat.icon} alt={stat.label} className="w-5 h-5 object-contain" />
                     </div>
 
-                    {/* Value + Label */}
                     <div className="flex-1 min-w-0">
                         <div className="flex items-center gap-1.5">
                             <span className="text-lg font-bold text-white font-mono tracking-tight">

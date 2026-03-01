@@ -11,7 +11,6 @@ import {
   Cell,
 } from 'recharts';
 
-/* ─── Types ─── */
 interface SessionRow {
   id: string;
   student_id: string;
@@ -25,7 +24,6 @@ interface SessionRow {
 type SortKey = keyof SessionRow;
 type SortDir = 'asc' | 'desc';
 
-/* ─── Mock data for offline / dev ─── */
 const MOCK_DATA: SessionRow[] = [
   { id: '1', student_id: 'STU-001', experiment: 'Circuit Forge', score: 92, misconception: 'None', duration: 145, created_at: new Date(Date.now() - 120000).toISOString() },
   { id: '2', student_id: 'STU-002', experiment: 'Titration Bench', score: 67, misconception: 'pH Misconception', duration: 230, created_at: new Date(Date.now() - 300000).toISOString() },
@@ -49,7 +47,6 @@ const MOCK_DATA: SessionRow[] = [
   { id: '20', student_id: 'STU-020', experiment: 'Circuit Forge', score: 63, misconception: 'Short Circuit', duration: 225, created_at: new Date(Date.now() - 3900000).toISOString() },
 ];
 
-/* ─── Custom Recharts Tooltip ─── */
 const CustomTooltip: React.FC<any> = ({ active, payload, label }) => {
   if (!active || !payload?.length) return null;
   return (
@@ -62,7 +59,6 @@ const CustomTooltip: React.FC<any> = ({ active, payload, label }) => {
   );
 };
 
-/* ─── Score Badge Component ─── */
 const ScoreBadge: React.FC<{ score: number }> = ({ score }) => {
   const color =
     score > 80
@@ -78,7 +74,6 @@ const ScoreBadge: React.FC<{ score: number }> = ({ score }) => {
   );
 };
 
-/* ─── Stat Card Component ─── */
 const StatCard: React.FC<{
   label: string;
   value: string | number;
@@ -93,7 +88,7 @@ const StatCard: React.FC<{
     className="glass-panel rounded-2xl p-5 flex items-start gap-4 group hover:border-white/[0.12] transition-colors"
   >
     <div className="w-12 h-12 rounded-xl bg-gradient-to-br from-blue-500/20 to-indigo-600/20 flex items-center justify-center text-2xl shrink-0 border border-blue-500/10 group-hover:shadow-lg group-hover:shadow-blue-500/10 transition-shadow">
-      {icon}
+      <img src={icon} alt={label} className="w-6 h-6 object-contain" />
     </div>
     <div className="min-w-0">
       <p className="text-[11px] text-white/35 uppercase tracking-widest font-medium">{label}</p>
@@ -103,7 +98,6 @@ const StatCard: React.FC<{
   </motion.div>
 );
 
-/* ─── Sort Icon ─── */
 const SortIcon: React.FC<{ active: boolean; dir: SortDir }> = ({ active, dir }) => (
   <svg className={`w-3 h-3 inline ml-1 transition-colors ${active ? 'text-blue-400' : 'text-white/15'}`} fill="none" viewBox="0 0 24 24" stroke="currentColor">
     {dir === 'asc' ? (
@@ -114,9 +108,6 @@ const SortIcon: React.FC<{ active: boolean; dir: SortDir }> = ({ active, dir }) 
   </svg>
 );
 
-/* ─────────────────────────────────────────── */
-/* ─── TeacherDashboard ─────────────────────── */
-/* ─────────────────────────────────────────── */
 export const TeacherDashboard: React.FC = () => {
   const [rows, setRows] = useState<SessionRow[]>([]);
   const [loading, setLoading] = useState(true);
@@ -124,7 +115,6 @@ export const TeacherDashboard: React.FC = () => {
   const [sortKey, setSortKey] = useState<SortKey>('created_at');
   const [sortDir, setSortDir] = useState<SortDir>('desc');
 
-  /* ── Fetch initial data ── */
   useEffect(() => {
     let cancelled = false;
 
@@ -139,7 +129,6 @@ export const TeacherDashboard: React.FC = () => {
           setLoading(false);
         }
       } catch {
-        // Offline / dev mode — use mock data
         if (!cancelled) {
           setRows(MOCK_DATA);
           setLoading(false);
@@ -149,7 +138,6 @@ export const TeacherDashboard: React.FC = () => {
 
     fetchData();
 
-    /* ── Subscribe to Supabase Realtime ── */
     let channel: any = null;
     const subscribeRealtime = async () => {
       try {
@@ -191,7 +179,6 @@ export const TeacherDashboard: React.FC = () => {
     };
   }, []);
 
-  /* ── Simulate live updates in dev mode ── */
   useEffect(() => {
     if (!isLive) return;
 
@@ -214,7 +201,6 @@ export const TeacherDashboard: React.FC = () => {
     return () => clearInterval(interval);
   }, [isLive]);
 
-  /* ── Computed stats ── */
   const stats = useMemo(() => {
     if (!rows.length) return { total: 0, avgScore: 0, topMisconception: 'N/A' };
 
@@ -234,7 +220,6 @@ export const TeacherDashboard: React.FC = () => {
     return { total: rows.length, avgScore: Math.round(avgScore * 10) / 10, topMisconception };
   }, [rows]);
 
-  /* ── Chart data ── */
   const chartData = useMemo(() => {
     const freq: Record<string, number> = {};
     rows.forEach((r) => {
@@ -249,7 +234,6 @@ export const TeacherDashboard: React.FC = () => {
 
   const BAR_COLORS = ['#3b82f6', '#6366f1', '#8b5cf6', '#a855f7', '#ec4899'];
 
-  /* ── Sorting ── */
   const handleSort = useCallback(
     (key: SortKey) => {
       if (sortKey === key) {
@@ -277,7 +261,6 @@ export const TeacherDashboard: React.FC = () => {
     return copy.slice(0, 20);
   }, [rows, sortKey, sortDir]);
 
-  /* ── Table column config ── */
   const columns: { key: SortKey; label: string; className?: string }[] = [
     { key: 'student_id', label: 'Student ID' },
     { key: 'experiment', label: 'Experiment' },
@@ -301,7 +284,6 @@ export const TeacherDashboard: React.FC = () => {
 
   return (
     <div className="min-h-screen bg-[#0a0a1a] text-white">
-      {/* ── Header ── */}
       <header className="glass-navbar sticky top-0 z-50 px-6 py-4 flex items-center justify-between">
         <div className="flex items-center gap-3">
           <a
@@ -350,32 +332,30 @@ export const TeacherDashboard: React.FC = () => {
       </header>
 
       <main className="max-w-7xl mx-auto px-6 py-6 space-y-6">
-        {/* ── Stat Cards ── */}
         <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
           <StatCard
             index={0}
             label="Total Sessions"
             value={stats.total}
-            icon="📊"
+            icon="/icon_periodic_table.png"
             sub="All experiments combined"
           />
           <StatCard
             index={1}
             label="Average Score"
             value={`${stats.avgScore}%`}
-            icon="🎯"
+            icon="/icon_projectile.png"
             sub={stats.avgScore >= 70 ? 'Above benchmark' : 'Below benchmark'}
           />
           <StatCard
             index={2}
             label="Most Common Misconception"
             value={stats.topMisconception}
-            icon="⚠️"
+            icon="/icon_warning.png"
             sub="Most frequently triggered"
           />
         </div>
 
-        {/* ── Misconception Heatmap Chart ── */}
         <motion.div
           initial={{ opacity: 0, y: 16 }}
           animate={{ opacity: 1, y: 0 }}
@@ -424,7 +404,6 @@ export const TeacherDashboard: React.FC = () => {
           )}
         </motion.div>
 
-        {/* ── Session Table ── */}
         <motion.div
           initial={{ opacity: 0, y: 16 }}
           animate={{ opacity: 1, y: 0 }}
@@ -474,10 +453,10 @@ export const TeacherDashboard: React.FC = () => {
                         <span className="inline-flex items-center gap-1.5 text-xs text-white/70">
                           <span>
                             {row.experiment === 'Circuit Forge'
-                              ? '⚡'
+                              ? <img src="/icon_ohm_law.png" className="w-4 h-4 object-contain inline" alt="Physics" />
                               : row.experiment === 'Titration Bench'
-                                ? '🧪'
-                                : '🧬'}
+                                ? <img src="/icon_titration.png" className="w-4 h-4 object-contain inline" alt="Chemistry" />
+                                : <img src="/icon_cell.png" className="w-4 h-4 object-contain inline" alt="Biology" />}
                           </span>
                           {row.experiment}
                         </span>
@@ -515,7 +494,6 @@ export const TeacherDashboard: React.FC = () => {
         </motion.div>
       </main>
 
-      {/* ── Ambient Glow ── */}
       <div className="fixed inset-0 pointer-events-none z-0">
         <div className="absolute top-20 left-1/3 w-[500px] h-[500px] bg-blue-600/[0.03] rounded-full blur-[120px]" />
         <div className="absolute bottom-20 right-1/3 w-[400px] h-[400px] bg-indigo-600/[0.03] rounded-full blur-[100px]" />

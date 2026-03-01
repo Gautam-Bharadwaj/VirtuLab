@@ -9,7 +9,6 @@ import {
   ResponsiveContainer,
 } from 'recharts';
 
-/* ─── Props ─── */
 interface SkillRadarProps {
   score: number;
   mistakeCount: number;
@@ -19,30 +18,27 @@ interface SkillRadarProps {
   onClose: () => void;
 }
 
-/* ─── Axis feedback map ─── */
 const FEEDBACK: Record<string, string> = {
   'Procedural Accuracy':
-    '📝 Focus on following the correct experimental steps more carefully.',
+    'Focus on following the correct experimental steps more carefully.',
   'Safety Awareness':
-    '⚠️ Watch for dangerous parameter ranges — safety is the top priority in any lab.',
+    'Watch for dangerous parameter ranges — safety is the top priority in any lab.',
   Efficiency:
-    '⏱️ Try to complete your experiment faster — plan your steps before starting.',
+    'Try to complete your experiment faster — plan your steps before starting.',
   'Error Recovery':
-    '🔄 Fewer mistakes means better understanding — review the theory before experimenting.',
+    'Fewer mistakes means better understanding — review the theory before experimenting.',
   'Concept Mastery':
-    '📚 Strengthen your understanding of the underlying science concepts.',
+    'Strengthen your understanding of the underlying science concepts.',
 };
 
-/* ─── Grade helper ─── */
-function getGrade(avg: number): { label: string; color: string; emoji: string } {
-  if (avg >= 90) return { label: 'Outstanding', color: 'text-emerald-400', emoji: '🏆' };
-  if (avg >= 75) return { label: 'Great Job', color: 'text-blue-400', emoji: '⭐' };
-  if (avg >= 60) return { label: 'Good Effort', color: 'text-amber-400', emoji: '👍' };
-  if (avg >= 40) return { label: 'Needs Improvement', color: 'text-orange-400', emoji: '📖' };
-  return { label: 'Keep Practicing', color: 'text-red-400', emoji: '💪' };
-}
+const getGrade = (avg: number): { label: string; color: string } => {
+  if (avg >= 90) return { label: 'Outstanding', color: 'text-emerald-400' };
+  if (avg >= 75) return { label: 'Great Job', color: 'text-blue-400' };
+  if (avg >= 60) return { label: 'Good Effort', color: 'text-amber-400' };
+  if (avg >= 40) return { label: 'Needs Improvement', color: 'text-orange-400' };
+  return { label: 'Keep Practicing', color: 'text-red-400' };
+};
 
-/* ─── Custom Angle Axis Tick ─── */
 const CustomTick: React.FC<any> = ({ payload, x, y, cx, cy }) => {
   const dx = x - cx;
   const dy = y - cy;
@@ -65,9 +61,6 @@ const CustomTick: React.FC<any> = ({ payload, x, y, cx, cy }) => {
   );
 };
 
-/* ─────────────────────────────────────────── */
-/* ─── SkillRadar Component ───────────────── */
-/* ─────────────────────────────────────────── */
 const SkillRadar: React.FC<SkillRadarProps> = ({
   score,
   mistakeCount,
@@ -76,7 +69,6 @@ const SkillRadar: React.FC<SkillRadarProps> = ({
   isOpen,
   onClose,
 }) => {
-  /* ── Compute 5 axis scores ── */
   const axes = useMemo(() => {
     const proceduralAccuracy = Math.min(100, Math.max(0, score));
     const safetyAwareness = failureTriggered ? 30 : 100;
@@ -93,7 +85,6 @@ const SkillRadar: React.FC<SkillRadarProps> = ({
     ];
   }, [score, mistakeCount, duration, failureTriggered]);
 
-  /* ── Find weakest axis for feedback ── */
   const weakest = useMemo(
     () => axes.reduce((min, cur) => (cur.value < min.value ? cur : min), axes[0]),
     [axes]
@@ -115,7 +106,6 @@ const SkillRadar: React.FC<SkillRadarProps> = ({
           exit={{ opacity: 0 }}
           className="fixed inset-0 z-[100] flex items-center justify-center"
         >
-          {/* Backdrop */}
           <motion.div
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
@@ -124,7 +114,6 @@ const SkillRadar: React.FC<SkillRadarProps> = ({
             className="absolute inset-0 bg-black/60 backdrop-blur-sm"
           />
 
-          {/* Modal */}
           <motion.div
             initial={{ opacity: 0, scale: 0.85, y: 30 }}
             animate={{ opacity: 1, scale: 1, y: 0 }}
@@ -132,10 +121,8 @@ const SkillRadar: React.FC<SkillRadarProps> = ({
             transition={{ type: 'spring', damping: 25, stiffness: 300 }}
             className="relative w-[480px] max-w-[92vw] glass-panel rounded-3xl border border-white/[0.08] shadow-2xl shadow-blue-500/5 overflow-hidden"
           >
-            {/* Header gradient bar */}
             <div className="h-1 bg-gradient-to-r from-blue-500 via-indigo-500 to-purple-500" />
 
-            {/* Close button */}
             <button
               id="close-skill-radar"
               onClick={onClose}
@@ -146,15 +133,12 @@ const SkillRadar: React.FC<SkillRadarProps> = ({
               </svg>
             </button>
 
-            {/* Title */}
             <div className="px-6 pt-5 pb-2">
               <h2 className="text-lg font-bold text-white">Experiment Performance</h2>
               <p className="text-xs text-white/30 mt-0.5">Your skill breakdown from this session</p>
             </div>
 
-            {/* Grade + Average */}
             <div className="flex items-center gap-3 mx-6 mb-2 px-4 py-3 rounded-xl bg-white/[0.03] border border-white/[0.05]">
-              <span className="text-3xl">{grade.emoji}</span>
               <div>
                 <p className={`text-lg font-bold ${grade.color}`}>{grade.label}</p>
                 <p className="text-xs text-white/30">
@@ -167,7 +151,6 @@ const SkillRadar: React.FC<SkillRadarProps> = ({
               </div>
             </div>
 
-            {/* Radar Chart */}
             <div className="px-4 py-2">
               <ResponsiveContainer width="100%" height={280}>
                 <RadarChart data={axes} cx="50%" cy="50%" outerRadius="72%">
@@ -203,17 +186,16 @@ const SkillRadar: React.FC<SkillRadarProps> = ({
               </ResponsiveContainer>
             </div>
 
-            {/* Axis scores breakdown */}
             <div className="px-6 pb-2">
               <div className="grid grid-cols-5 gap-1">
                 {axes.map((a) => (
                   <div key={a.axis} className="text-center">
                     <div
                       className={`text-base font-bold font-mono ${a.value >= 80
-                          ? 'text-emerald-400'
-                          : a.value >= 50
-                            ? 'text-amber-400'
-                            : 'text-red-400'
+                        ? 'text-emerald-400'
+                        : a.value >= 50
+                          ? 'text-amber-400'
+                          : 'text-red-400'
                         }`}
                     >
                       {a.value}
@@ -226,10 +208,9 @@ const SkillRadar: React.FC<SkillRadarProps> = ({
               </div>
             </div>
 
-            {/* AI Feedback */}
             <div className="mx-6 mb-5 mt-2 px-4 py-3 rounded-xl bg-gradient-to-r from-blue-500/[0.06] to-indigo-500/[0.06] border border-blue-500/[0.1]">
               <div className="flex items-start gap-2">
-                <span className="text-sm mt-0.5">🤖</span>
+                <img src="/icon_ai_tutor.png" alt="AI Mentor" className="w-4 h-4 object-contain mt-0.5" />
                 <div>
                   <p className="text-xs text-white/50 font-medium mb-0.5">AI Feedback</p>
                   <p className="text-sm text-white/80 leading-relaxed">
@@ -242,7 +223,6 @@ const SkillRadar: React.FC<SkillRadarProps> = ({
               </div>
             </div>
 
-            {/* Bottom action */}
             <div className="px-6 pb-5 flex gap-3">
               <button
                 onClick={onClose}
