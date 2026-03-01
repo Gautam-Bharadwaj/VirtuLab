@@ -1,16 +1,8 @@
 import React, { useState, useRef, useEffect, useCallback } from 'react';
 import { useLabStore } from '../../store/useLabStore';
+import { useSocraticAI } from '../../hooks/useSocraticAI';
 import { motion, AnimatePresence } from 'framer-motion';
 
-/* ─── Types ─── */
-interface Message {
-  id: string;
-  role: 'ai' | 'student';
-  text: string;
-  timestamp: number;
-}
-
-/* ─── Text-to-Speech ─── */
 const speak = (text: string) => {
   if (!('speechSynthesis' in window)) return;
   window.speechSynthesis.cancel();
@@ -20,65 +12,24 @@ const speak = (text: string) => {
   window.speechSynthesis.speak(u);
 };
 
-/* ─── Helpers ─── */
-const genId = () =>
-  `msg-${Date.now()}-${Math.random().toString(36).slice(2, 7)}`;
+const triggerStyle: Record<string, { bg: string; text: string; label: string }> = {
+  failure: { bg: 'bg-rose-500/10 border-rose-500/20', text: 'text-rose-400', label: 'FAILURE DETECTED' },
+  danger: { bg: 'bg-amber-500/10 border-amber-500/20', text: 'text-amber-400', label: 'DANGER ZONE' },
+  ask: { bg: 'bg-blue-500/10 border-blue-500/20', text: 'text-blue-400', label: 'GUIDANCE' },
+  welcome: { bg: 'bg-emerald-500/10 border-emerald-500/20', text: 'text-emerald-400', label: 'WELCOME' },
+};
 
-/** Map failure names to hint keys in /hints.json */
-function failureToHintKey(failureName: string): string {
-  const lower = failureName.toLowerCase();
-  if (lower.includes('overvoltage')) return 'overvoltage';
-  if (lower.includes('short circuit') || lower.includes('short_circuit'))
-    return 'short_circuit';
-  if (lower.includes('denaturation') || lower.includes('enzyme'))
-    return 'enzyme_denaturation';
-  if (lower.includes('ph')) return 'ph_extreme';
-  return 'general';
-}
-
-let hintsCache: Record<string, string[]> | null = null;
-
-async function loadHints(): Promise<Record<string, string[]>> {
-  if (hintsCache) return hintsCache;
-  try {
-    const res = await fetch('/hints.json');
-    hintsCache = await res.json();
-    return hintsCache!;
-  } catch {
-    return { general: ['🔍 Try resetting to default values and adjusting one parameter at a time.'] };
-  }
-}
-
-function pickRandomHint(hints: Record<string, string[]>, key: string): string {
-  const pool = hints[key] ?? hints['general'] ?? ['Check your parameters!'];
-  return pool[Math.floor(Math.random() * pool.length)];
-}
-
-/* ─────────────────────────────────────────── */
-/* ─── AITutorPanel Component ─────────────── */
-/* ─────────────────────────────────────────── */
 const AITutorPanel: React.FC = () => {
-  const { tutorOpen, running, activeLab, failureState } = useLabStore();
-  const backendUrl = import.meta.env.VITE_BACKEND_URL || '';
+  const { tutorOpen, running, activeLab } = useLabStore();
+  const { messages, addStudentMsg, askAI, clearMessages, getCooldownRemaining } = useSocraticAI();
 
-  /* ── Local state ── */
-  const [messages, setMessages] = useState<Message[]>([
-    {
-      id: genId(),
-      role: 'ai',
-      text: 'Welcome to VirtuLab! Start an experiment and I will guide you through it. 🧪',
-      timestamp: Date.now(),
-    },
-  ]);
-  const [isLoading, setIsLoading] = useState(false);
   const [input, setInput] = useState('');
   const [speakingId, setSpeakingId] = useState<string | null>(null);
+  const [cooldownLeft, setCooldownLeft] = useState(0);
 
   const scrollRef = useRef<HTMLDivElement>(null);
   const inputRef = useRef<HTMLInputElement>(null);
-  const lastAnalyzeRef = useRef<number>(0);
 
-  /* ── Auto-scroll on new messages ── */
   useEffect(() => {
     if (scrollRef.current) {
       scrollRef.current.scrollTo({
@@ -86,115 +37,22 @@ const AITutorPanel: React.FC = () => {
         behavior: 'smooth',
       });
     }
-  }, [messages, isLoading]);
+  }, [messages]);
 
-  /* ── Add message helper ── */
-  const addMsg = useCallback((role: 'ai' | 'student', text: string) => {
-    setMessages((prev) => [
-      ...prev,
-      { id: genId(), role, text, timestamp: Date.now() },
-    ]);
-  }, []);
-
-  /* ── Offline fallback: use hints.json ── */
-  const offlineFallback = useCallback(async () => {
-    const hints = await loadHints();
-    const { failureState: fs } = useLabStore.getState();
-    const key = fs ? failureToHintKey(fs.name) : 'general';
-    const hint = pickRandomHint(hints, key);
-    addMsg('ai', hint);
-  }, [addMsg]);
-
-  /* ── Poll: every 3 seconds while running, POST to /api/tutor/analyze ── */
   useEffect(() => {
-    if (!running) return;
+    const timer = setInterval(() => {
+      setCooldownLeft(Math.ceil(getCooldownRemaining() / 1000));
+    }, 1000);
+    return () => clearInterval(timer);
+  }, [getCooldownRemaining]);
 
-    const interval = setInterval(async () => {
-      // Prevent overlapping requests
-      const now = Date.now();
-      if (now - lastAnalyzeRef.current < 2500) return;
-      lastAnalyzeRef.current = now;
-
-      const state = useLabStore.getState();
-      const payload = {
-        activeLab: state.activeLab,
-        inputs: state.inputs,
-        running: state.running,
-        failureState: state.failureState,
-      };
-
-      try {
-        const res = await fetch(`${backendUrl}/api/tutor/analyze`, {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify(payload),
-        });
-
-        if (!res.ok) throw new Error(`HTTP ${res.status}`);
-
-        const data = await res.json();
-        if (data.should_intervene && data.message) {
-          addMsg('ai', data.message);
-        }
-      } catch {
-        // Offline or API unavailable → use local hints
-        await offlineFallback();
-      }
-    }, 3000);
-
-    return () => clearInterval(interval);
-  }, [running, addMsg, offlineFallback]);
-
-  /* ── Also notify on failure state changes ── */
-  useEffect(() => {
-    if (failureState) {
-      addMsg(
-        'ai',
-        `⚠️ **${failureState.name}** — ${failureState.description}\n\nLet me help you understand what went wrong...`
-      );
-    }
-  }, [failureState, addMsg]);
-
-  /* ── Student sends a message ── */
-  const handleSend = () => {
+  const handleSend = useCallback(() => {
     const text = input.trim();
-    if (!text || isLoading) return;
-    addMsg('student', text);
+    if (!text) return;
+    addStudentMsg(text);
     setInput('');
     inputRef.current?.focus();
-
-    // Simulate AI reply (would be replaced with real API call)
-    setIsLoading(true);
-    setTimeout(async () => {
-      const state = useLabStore.getState();
-      try {
-        const res = await fetch(`${backendUrl}/api/tutor/ask`, {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({
-            question: text,
-            activeLab: state.activeLab,
-            inputs: state.inputs,
-          }),
-        });
-        if (!res.ok) throw new Error('API unavailable');
-        const data = await res.json();
-        addMsg('ai', data.reply || data.message);
-      } catch {
-        // Offline fallback: local context-aware reply
-        const replies: Record<string, string> = {
-          circuit:
-            "Great question! In circuits, Ohm's Law (V = IR) is fundamental. Try adjusting resistance and observe how current changes proportionally. The power dissipated is P = V²/R. 🔬",
-          titration:
-            "During titration, you're adding a known base to determine the unknown acid concentration. The equivalence point is where moles of acid = moles of base. Watch the pH curve! 📊",
-          enzyme:
-            "Enzyme kinetics follow Michaelis-Menten: v = Vmax·[S]/(Km+[S]). As substrate increases, rate approaches Vmax. Temperature affects the rate — but too high denatures the enzyme! 🧬",
-        };
-        addMsg('ai', replies[state.activeLab] || "That's an interesting question! Try experimenting with the controls — I'll help you understand what you observe. 🔍");
-      }
-      setIsLoading(false);
-    }, 800 + Math.random() * 600);
-  };
+  }, [input, addStudentMsg]);
 
   const handleKeyDown = (e: React.KeyboardEvent) => {
     if (e.key === 'Enter' && !e.shiftKey) {
@@ -203,13 +61,10 @@ const AITutorPanel: React.FC = () => {
     }
   };
 
-  /* ── Speak button handler ── */
   const handleSpeak = (id: string, text: string) => {
-    // Strip markdown-like syntax for cleaner speech
-    const clean = text.replace(/\*\*/g, '').replace(/⚠️/g, 'Warning: ');
+    const clean = text.replace(/\*\*/g, '');
     speak(clean);
     setSpeakingId(id);
-    // Reset after estimated duration
     setTimeout(() => setSpeakingId(null), Math.max(3000, clean.length * 60));
   };
 
@@ -220,37 +75,26 @@ const AITutorPanel: React.FC = () => {
       id="ai-tutor-panel"
       className="fixed right-0 top-16 bottom-0 w-80 flex flex-col glass-panel border-l border-white/[0.06] z-40"
     >
-      {/* ── Header ── */}
       <div className="flex items-center justify-between px-4 py-3 border-b border-white/[0.06]">
         <div className="flex items-center gap-2.5">
           <div className="w-9 h-9 rounded-xl bg-gradient-to-br from-emerald-500 to-teal-600 flex items-center justify-center shadow-lg shadow-emerald-500/20">
-            <span className="text-base">🤖</span>
+            <img src="/icon_ai_tutor.png" alt="AI" className="w-5 h-5 object-contain" />
           </div>
           <div>
             <h3 className="text-sm font-semibold text-white">Lab Mentor</h3>
             <div className="flex items-center gap-1.5">
-              <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse" />
-              <span className="text-[10px] text-emerald-400/80">
-                {running ? 'Monitoring experiment' : 'Online'}
+              <span className={`w-1.5 h-1.5 rounded-full ${running ? 'bg-emerald-400 animate-pulse' : 'bg-white/30'}`} />
+              <span className="text-[10px] text-white/50">
+                {running ? 'Observing silently...' : 'Ready'}
               </span>
             </div>
           </div>
         </div>
 
         <div className="flex items-center gap-1">
-          {/* Clear chat */}
           <button
             id="clear-chat"
-            onClick={() =>
-              setMessages([
-                {
-                  id: genId(),
-                  role: 'ai',
-                  text: 'Chat cleared. How can I help you? 🧪',
-                  timestamp: Date.now(),
-                },
-              ])
-            }
+            onClick={clearMessages}
             className="p-1.5 rounded-lg hover:bg-white/[0.06] text-white/30 hover:text-white/60 transition-colors"
             title="Clear chat"
           >
@@ -261,7 +105,6 @@ const AITutorPanel: React.FC = () => {
         </div>
       </div>
 
-      {/* ── Messages List ── */}
       <div
         ref={scrollRef}
         className="flex-1 overflow-y-auto px-3 py-3 space-y-3 scrollbar-thin"
@@ -276,10 +119,9 @@ const AITutorPanel: React.FC = () => {
               transition={{ duration: 0.2 }}
               className={`flex ${msg.role === 'student' ? 'justify-end' : 'justify-start'}`}
             >
-              {/* AI avatar */}
               {msg.role === 'ai' && (
                 <div className="w-6 h-6 rounded-full bg-emerald-500/20 flex items-center justify-center mr-2 mt-1 shrink-0">
-                  <span className="text-xs">🤖</span>
+                  <img src="/icon_ai_tutor.png" alt="AI" className="w-4 h-4 object-contain" />
                 </div>
               )}
 
@@ -289,9 +131,15 @@ const AITutorPanel: React.FC = () => {
                   : 'bg-white/[0.05] text-white/90 rounded-bl-sm border border-white/[0.06]'
                   }`}
               >
+                {msg.role === 'ai' && msg.trigger && msg.trigger !== 'welcome' && msg.trigger !== 'student' && (
+                  <div className={`inline-flex items-center gap-1 px-2 py-0.5 rounded-full border text-[8px] font-black uppercase tracking-widest mb-1.5 ${triggerStyle[msg.trigger]?.bg ?? ''} ${triggerStyle[msg.trigger]?.text ?? 'text-white/40'}`}>
+                    <span className={`w-1 h-1 rounded-full ${msg.trigger === 'failure' ? 'bg-rose-400' : msg.trigger === 'danger' ? 'bg-amber-400' : 'bg-blue-400'}`} />
+                    {triggerStyle[msg.trigger]?.label ?? 'AI'}
+                  </div>
+                )}
+
                 <p className="whitespace-pre-wrap">{msg.text}</p>
 
-                {/* Speaker button on AI messages */}
                 {msg.role === 'ai' && (
                   <button
                     onClick={() => handleSpeak(msg.id, msg.text)}
@@ -314,7 +162,6 @@ const AITutorPanel: React.FC = () => {
                   </button>
                 )}
 
-                {/* Timestamp */}
                 <span
                   className={`block text-[9px] mt-1 ${msg.role === 'student' ? 'text-white/40 text-right' : 'text-white/20'
                     }`}
@@ -328,32 +175,8 @@ const AITutorPanel: React.FC = () => {
             </motion.div>
           ))}
         </AnimatePresence>
-
-        {/* ── Typing indicator ── */}
-        <AnimatePresence>
-          {isLoading && (
-            <motion.div
-              initial={{ opacity: 0, y: 8 }}
-              animate={{ opacity: 1, y: 0 }}
-              exit={{ opacity: 0, y: 8 }}
-              className="flex justify-start"
-            >
-              <div className="w-6 h-6 rounded-full bg-emerald-500/20 flex items-center justify-center mr-2 mt-1 shrink-0">
-                <span className="text-xs">🤖</span>
-              </div>
-              <div className="bg-white/[0.05] rounded-2xl rounded-bl-sm px-4 py-3 border border-white/[0.06]">
-                <div className="flex items-center gap-1.5">
-                  <span className="w-2 h-2 bg-emerald-400/50 rounded-full animate-bounce [animation-delay:0ms]" />
-                  <span className="w-2 h-2 bg-emerald-400/50 rounded-full animate-bounce [animation-delay:150ms]" />
-                  <span className="w-2 h-2 bg-emerald-400/50 rounded-full animate-bounce [animation-delay:300ms]" />
-                </div>
-              </div>
-            </motion.div>
-          )}
-        </AnimatePresence>
       </div>
 
-      {/* ── Active Monitoring Banner ── */}
       <AnimatePresence>
         {running && (
           <motion.div
@@ -364,15 +187,31 @@ const AITutorPanel: React.FC = () => {
           >
             <div className="px-3 py-2 bg-emerald-500/[0.06] border-t border-emerald-500/10 flex items-center gap-2">
               <div className="w-2 h-2 rounded-full bg-emerald-400 animate-pulse" />
-              <span className="text-[11px] text-emerald-400/80">
-                Monitoring {activeLab === 'circuit' ? '⚡ Circuit' : activeLab === 'titration' ? '🧪 Titration' : '🧬 Enzyme'} experiment…
+              <span className="text-[11px] text-emerald-400/80 flex-1">
+                Observing {activeLab.replace('-', ' ')} silently...
               </span>
+              {cooldownLeft > 0 && (
+                <span className="text-[9px] text-white/20 font-mono">{cooldownLeft}s cooldown</span>
+              )}
             </div>
           </motion.div>
         )}
       </AnimatePresence>
 
-      {/* ── Input Area ── */}
+      <div className="px-3 py-2 border-t border-white/[0.04]">
+        <motion.button
+          whileHover={{ scale: 1.02 }}
+          whileTap={{ scale: 0.98 }}
+          onClick={askAI}
+          className="w-full h-9 rounded-xl bg-gradient-to-r from-emerald-500/10 to-teal-500/10 border border-emerald-500/20 text-emerald-400 flex items-center justify-center gap-2 text-xs font-bold uppercase tracking-widest hover:from-emerald-500/20 hover:to-teal-500/20 transition-all"
+        >
+          <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9.663 17h4.673M12 3v1m6.364 1.636l-.707.707M21 12h-1M4 12H3m3.343-5.657l-.707-.707m2.828 9.9a5 5 0 117.072 0l-.548.547A3.374 3.374 0 0014 18.469V19a2 2 0 11-4 0v-.531c0-.895-.356-1.754-.988-2.386l-.548-.547z" />
+          </svg>
+          Ask AI for Guidance
+        </motion.button>
+      </div>
+
       <div className="p-3 border-t border-white/[0.06]">
         <div className="flex items-center gap-2 bg-white/[0.03] rounded-xl border border-white/[0.08] px-3 py-1.5 focus-within:border-blue-500/30 transition-colors">
           <input
@@ -383,13 +222,12 @@ const AITutorPanel: React.FC = () => {
             onChange={(e) => setInput(e.target.value)}
             onKeyDown={handleKeyDown}
             placeholder="Ask your Lab Mentor..."
-            disabled={isLoading}
-            className="flex-1 bg-transparent text-sm text-white placeholder:text-white/25 outline-none py-1.5 disabled:opacity-50"
+            className="flex-1 bg-transparent text-sm text-white placeholder:text-white/25 outline-none py-1.5"
           />
           <button
             id="send-message"
             onClick={handleSend}
-            disabled={!input.trim() || isLoading}
+            disabled={!input.trim()}
             className="p-2 rounded-lg bg-gradient-to-r from-blue-600 to-indigo-600 text-white disabled:opacity-25 disabled:cursor-not-allowed hover:shadow-lg hover:shadow-blue-500/20 transition-all active:scale-95"
           >
             <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
@@ -402,6 +240,5 @@ const AITutorPanel: React.FC = () => {
   );
 };
 
-/* ── Named + Default export ── */
 export { AITutorPanel };
 export default AITutorPanel;
