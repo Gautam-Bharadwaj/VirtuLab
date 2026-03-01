@@ -1,33 +1,127 @@
 {
-    "overvoltage": [
-        "💡 Tip: Most real-world circuits operate under 12V. Going above 20V can damage components like LEDs and ICs.",
-        "⚡ Remember Ohm's Law: V = IR. If voltage is too high and resistance is low, current spikes dangerously!",
-        "🔌 Industrial circuits use voltage regulators to prevent overvoltage — try keeping it under 20V.",
-        "🔥 Overvoltage can cause thermal runaway in semiconductors. Think about what happens to a light bulb with too much power!"
-    ],
-    "short_circuit": [
-        "🔧 A short circuit occurs when resistance approaches zero — infinite current can flow, causing fires!",
-        "⚠️ Always ensure your circuit has sufficient resistance. Even a small resistor (10Ω) can prevent a short.",
-        "💡 Fuses and circuit breakers exist specifically to protect against short circuits.",
-        "🔬 In the real lab, a short circuit would trip the breaker instantly. Notice how current → ∞ as R → 0."
-    ],
-    "enzyme_denaturation": [
-        "🌡️ Enzymes are proteins — above ~70°C, their 3D structure unfolds (denatures) and they stop working.",
-        "🧬 Think of it like cooking an egg: once the protein changes shape, it can't go back!",
-        "📈 The optimal temperature for most human enzymes is 37°C (body temperature). Try that value!",
-        "🔬 Denaturation is irreversible — in a real lab, you'd need fresh enzyme to continue the experiment."
-    ],
-    "ph_extreme": [
-        "🧪 Extreme pH values (below 2 or above 12) can denature enzymes just like high temperatures.",
-        "⚗️ Most biological enzymes work best between pH 6–8. Pepsin is a rare exception (pH 2).",
-        "💧 pH is logarithmic — pH 3 is 10x more acidic than pH 4!",
-        "🔬 In titration, watch for the equivalence point where the pH changes most rapidly."
-    ],
-    "general": [
-        "🔍 Not sure what went wrong? Try resetting to default values and adjusting one parameter at a time.",
-        "📊 Science is about controlled experiments — change ONE variable and observe the effect.",
-        "🧪 Every experiment teaches something, even when things go wrong! What did you learn?",
-        "💡 Ask me a question in the chat if you're stuck — I'm here to help you learn!",
-        "📝 Good scientists take notes. What readings do you see in the bottom stat bar?"
-    ]
+    "failures": {
+        "OVERLOAD": {
+            "levels": [
+                "What happens to current when you apply a very high voltage across a low resistance? Can you think of why that might be dangerous?",
+                "Your current just hit {current}mA with only {resistance} ohms. What does Ohm's Law tell you about the relationship between V, I, and R here?",
+                "At {voltage}V and {resistance} ohms, current = V/R = {current}mA. Real components have max ratings — your circuit just exceeded them. Try reducing voltage below 12V or increasing resistance."
+            ]
+        },
+        "SHORT_CIRCUIT": {
+            "levels": [
+                "What do you think happens to current flow when resistance gets extremely small? Why might that be a problem?",
+                "Your resistance is near {resistance} ohms — what would the calculated current be? Is that physically realistic?",
+                "With near-zero resistance, current approaches infinity (I = V/R). Real wires melt and fuses blow. Keep resistance above 10 ohms to simulate realistic circuits."
+            ]
+        },
+        "OVERSHOOT": {
+            "levels": [
+                "The projectile went very far. What variables control how far something travels when thrown? Which one has the biggest effect?",
+                "At {velocity}m/s and {angle} degrees, the range exceeded the field. Which parameter would you reduce to keep the projectile in bounds?",
+                "Range = v squared times sin(2 times angle) divided by g. High velocity has quadratic effect. Try velocity below 30 m/s or angles away from 45 degrees."
+            ]
+        },
+        "ZERO_RANGE": {
+            "levels": [
+                "The projectile didn't travel at all. What conditions would make an object land exactly where it started?",
+                "Your launch angle is {angle} degrees. At 0 degrees and 90 degrees, what horizontal distance would you expect?",
+                "At 0 degrees, all velocity is horizontal but there's no loft. At 90 degrees, it goes straight up and comes straight down. Try something between 20 and 70 degrees."
+            ]
+        },
+        "LARGE_ANGLE": {
+            "levels": [
+                "You're using a very steep angle. What happens to horizontal range as the angle approaches 90 degrees?",
+                "At {angle} degrees, most velocity goes upward. If you want maximum distance, what angle maximizes sin(2 times theta)?",
+                "Maximum range occurs at exactly 45 degrees because sin(90) = 1. Your angle of {angle} degrees gives sin({twoAngle}) = {sinValue}, much less efficient."
+            ]
+        },
+        "PH_EXTREME": {
+            "levels": [
+                "You've moved past the equivalence point. What does pH do when you add excess base to a neutralized solution?",
+                "With {baseVolume}mL added, the equivalence point was around 25mL. What happens to the extra hydroxide ions?",
+                "Past the equivalence point, excess OH minus ions accumulate, pushing pH above 10 rapidly. The curve flattens because the solution is already basic."
+            ]
+        },
+        "ENZYME_DENATURATION": {
+            "levels": [
+                "The enzyme stopped working. What environmental factor could cause a protein to lose its 3D shape?",
+                "At {temperature} degrees C, the enzyme denatured. Most enzymes have an optimal range — what temperature is that for human enzymes?",
+                "Proteins unfold above ~65 degrees C (denaturation). Human enzymes work best at 37 degrees C. This is irreversible — like cooking an egg."
+            ]
+        }
+    },
+    "danger_zones": {
+        "ohm-law": {
+            "condition_description": "Current above 200mA (high power dissipation zone)",
+            "levels": [
+                "I notice the power dissipation is getting high. What happens to real resistors when they dissipate too much heat?",
+                "Your circuit is drawing {current}mA. Many standard resistors are rated for only 0.25W. What's the power here?",
+                "At {voltage}V and {current}mA, power = {power}W. Standard 1/4W resistors would overheat. Consider reducing voltage or increasing resistance."
+            ]
+        },
+        "projectile-motion": {
+            "condition_description": "Velocity above 40 m/s or angle above 80 degrees",
+            "levels": [
+                "Your parameters are pushing toward extreme values. In real experiments, what practical limits would you face?",
+                "At {velocity}m/s, your projectile would need significant launch energy. Is this realistic for a classroom setup?",
+                "Practical launchers rarely exceed 30 m/s. Angles near 90 degrees waste energy — the projectile goes straight up and comes back down."
+            ]
+        },
+        "titration": {
+            "condition_description": "Near equivalence point (23-27 mL)",
+            "levels": [
+                "You're approaching a critical region. In titration, what happens to pH change per drop near the equivalence point?",
+                "Between 24-26mL, pH changes dramatically per 0.1mL added. Why does the curve become nearly vertical here?",
+                "At equivalence (~25mL), moles acid = moles base. A single drop swings pH by 4-6 units because there's no buffer capacity left."
+            ]
+        },
+        "optics-bench": {
+            "condition_description": "Object near focal point",
+            "levels": [
+                "Your object is very close to a special distance. What happens to the image when the object sits at certain key positions?",
+                "Object at {objectDistance}cm with focal length {focalLength}cm — you're near u = f. What does the lens formula give for image distance?",
+                "When object distance equals focal length, 1/v = 1/f - 1/f = 0, so v approaches infinity. The image forms at infinity — rays become parallel."
+            ]
+        },
+        "reaction-rate": {
+            "condition_description": "Temperature above 80 degrees C",
+            "levels": [
+                "Your temperature is getting very high. In real chemistry, what side effects can extreme heat cause beyond speeding up the reaction?",
+                "At {temperature} degrees C, the Arrhenius factor is very large. But what about the catalyst or enzyme stability?",
+                "Above 80 degrees C, many catalysts degrade. The Arrhenius equation predicts exponential rate increase, but real systems have thermal limits."
+            ]
+        }
+    },
+    "ask_ai": {
+        "ohm-law": [
+            "Looking at your current setup with {voltage}V and {resistance} ohms: Which parameter do you think has a bigger effect on current — and why?",
+            "Try doubling just the resistance. What happens to the current? Now try doubling the voltage instead. See the symmetry?",
+            "Here's a challenge: Can you find the voltage and resistance combination that gives exactly 100mA? Use I = V/R."
+        ],
+        "projectile-motion": [
+            "What angle do you think gives maximum range? Try a few values and watch the trajectory change shape.",
+            "Notice that {angle} degrees and {complementary} degrees give the same range. Why do complementary angles produce equal distances?",
+            "Try fixing the angle at 45 degrees and changing velocity. See how range scales with velocity squared, not linearly."
+        ],
+        "titration": [
+            "Watch the pH curve shape. Why is it flat at the start, steep in the middle, and flat again at the end?",
+            "With {baseVolume}mL added, you're in the buffer region. What provides the buffering capacity here?",
+            "Try adding base in 0.1mL increments near 25mL. Count how many drops it takes for pH to jump from 4 to 10."
+        ],
+        "optics-bench": [
+            "With focal length {focalLength}cm, what happens when you place the object at exactly 2 times the focal length? Try it.",
+            "Move the object closer to the lens than the focal point. What changes about the image — position, orientation, size?",
+            "Real lenses have edge distortion called aberration. In this simulation, we use the thin lens equation which assumes a perfect lens."
+        ],
+        "reaction-rate": [
+            "Chemical kinetics says rate depends on temperature and concentration. Which effect is stronger? Try testing both.",
+            "At {temperature} degrees C and {concentration}M, can you predict the rate before you see it? Use the van 't Hoff rule: rate doubles every 10 degrees.",
+            "Try increasing concentration from 1M to 2M at constant temperature. The rate should double — this is a first-order reaction."
+        ],
+        "general": [
+            "What's one variable you haven't changed yet? Scientific method says test variables one at a time.",
+            "Can you predict what will happen before you press Run? Making predictions is the most important part of learning science.",
+            "What surprised you in this experiment? The gap between expectation and reality is where real understanding lives."
+        ]
+    }
 }
