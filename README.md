@@ -71,9 +71,9 @@ graph TD
     User([Student/Teacher]) <--> Frontend[React PWA - Vite]
     Frontend <--> State[Zustand State Management]
     State --> Physics[JS Physics Engines]
-    Frontend <-- API --> Backend[FastAPI - Render]
+    Frontend <-->|API| Backend[FastAPI - Render]
     Backend <--> AI[Gemini 1.5 Pro Agent]
-    Frontend -- Realtime --> DB[(Supabase PostgreSQL)]
+    Frontend -->|Realtime| DB[(Supabase PostgreSQL)]
     DB <--> Dashboard[Teacher Analytics Dashboard]
 ```
 
@@ -107,7 +107,7 @@ erDiagram
         uuid id PK
         uuid session_id FK
         jsonb parameters
-        timestamp timestamp
+        timestamp recorded_at
     }
     MISCONCEPTIONS {
         uuid id PK
