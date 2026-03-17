@@ -283,9 +283,9 @@ sequenceDiagram
 
 | Member Name | Role | Responsibilities |
 |-------------|------|-----------------|
-| **Kumar Gautam** | **Project Lead & Frontend Architect** | Core UI/UX, Simulation Logic, State Management (Zustand). |
-| **Mohit** | **Backend & AI Engineer** | FastAPI development, LangGraph orchestration, Gemini integration. |
-| **Karan Thakur** | **Database & Infrastructure** | Supabase setup, Real-time telemetry, Deployment. |
+| **Kumar Gautam** | **Frontend Architect** | Core UI/UX, Simulation Logic, State Management (Zustand). |
+| **Ayush Kumar Singh** | **Backend & AI Engineer** | FastAPI development, LangGraph orchestration, Gemini integration. |
+| **Isha Singh** | **Database & Infrastructure** | Supabase setup, Real-time telemetry, Deployment. |
 
 ---
 
